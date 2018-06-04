@@ -3,15 +3,15 @@ How to setup a fabcoin test environment in your Ubuntu 16.04 environment.
 
 
 #  Install Ubuntu 16.04  and  support package
-Please refer doc/Build-unix.md to setup Ubuntu 16.04 and install support package.
+Please refer to doc/Build-unix.md to setup Ubuntu 16.04 and install support package.
 
 ## Install Ubuntu 16.04 
-wallet need GUI desktop.
+The wallet needs GUI desktop.
 
 ## Install other support package
-Please refer doc/build-unix.md, to install support package for fabcoin.
+To install support packages for fabcoin, please refer to doc/build-unix.md.
 
-Below is a quick shell-script to install package.
+Below is a quick shell-script to install packages.
 
     sudo apt-get update
     sudo apt-get install git
@@ -48,11 +48,11 @@ Please set below content in fabcoin.conf, to specific testnet.
     addnode=54.215.244.48
     addnode=18.130.8.117
     gen=1
-    G=1                  
-    allgpu=1     
+    G=1
+    allgpu=1
     
 ### Testnet
-    testnet=1                                 
+    testnet=1
     addnode=35.182.160.212
     addnode=13.59.134.49
     gen=1

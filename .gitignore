@@ -115,3 +115,6 @@ share/FabcoindComparisonTool.jar
 
 libfabcoinconsensus.pc
 contrib/devtools/split-debug.sh
+test/config.ini
+src/test/test_fabcoin_fuzzy
+src/fabcoin.pro.user
