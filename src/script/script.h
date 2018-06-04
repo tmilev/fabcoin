@@ -479,6 +479,7 @@ public:
 
     CScript& operator<<(const CScript& b)
     {
+        (void) b;
         // I'm not sure if this should push the script or concatenate scripts.
         // If there's ever a use for pushing a script onto a script, delete this member fn
         assert(!"Warning: Pushing a CScript onto a CScript with << is probably not intended, use + to concatenate!");

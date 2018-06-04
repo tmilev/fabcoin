@@ -10,5 +10,4 @@
 
 // Attempt to overwrite data in the specified memory span.
 void memory_cleanse(void *ptr, size_t len);
-
 #endif // FABCOIN_SUPPORT_CLEANSE_H
