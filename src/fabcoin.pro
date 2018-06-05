@@ -13,12 +13,23 @@ secp256k1/include/
 LIBS+= \
 -lpthread \
 -lboost_filesystem \
--lboost_system
+-lboost_system \
+-lboost_thread
+
+
+LIBS += \
+-Lleveldb/ -lleveldb \
+-L$$PWD/leveldb/ -lmemenv
+
+
+
+#qmake command:
+#qmake fabcoin.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
 
 
 #-L./leveldb/ -llibleveldb_sse42 \
 
-#-lboost_system -lboost_chrono -lboost_thread -lboost_timer
+#-lboost_system -lboost_chrono  -lboost_timer
 
 
 #    fabcoin-tx.cpp \
@@ -51,7 +62,7 @@ SOURCES += \
     merkleblock.cpp \
     miner.cpp \
     net_processing.cpp \
-    net.cpp \
+#    net.cpp \
     netaddress.cpp \
     netbase.cpp \
     noui.cpp \
@@ -105,6 +116,14 @@ SOURCES += \
     univalue/lib/univalue_read.cpp \
     univalue/lib/univalue_write.cpp \
     univalue/lib/univalue.cpp \
+    rpc/blockchain.cpp \
+    rpc/client.cpp \
+    rpc/mining.cpp \
+    rpc/misc.cpp \
+    rpc/net.cpp \
+#    rpc/protocol.cpp \
+    rpc/rawtransaction.cpp \
+    rpc/server.cpp
 
 
 SUBDIRS += \
@@ -227,4 +246,10 @@ HEADERS += \
     leveldb/db/table_cache.h \
     leveldb/db/version_edit.h \
     leveldb/db/version_set.h \
-    leveldb/db/write_batch_internal.h
+    leveldb/db/write_batch_internal.h \
+    rpc/blockchain.h \
+    rpc/client.h \
+    rpc/mining.h \
+    rpc/protocol.h \
+    rpc/register.h \
+    rpc/server.h

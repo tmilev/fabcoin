@@ -1060,11 +1060,11 @@ void GenerateFabcoins(bool fGenerate, int nThreads, const CChainParams& chainpar
         return;
 
     minerThreads = new boost::thread_group();
-    int  thread_sequence = 0;
 
     // If using GPU
     if(conf.useGPU) {
 #ifdef ENABLE_GPU
+        int  thread_sequence = 0;
         conf.currentPlatform = conf.sel_platform;
         conf.currentDevice = conf.selGPU;
 
