@@ -155,7 +155,7 @@ public:
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb4;
         pchMessageStart[3] = 0xd9;
-        nDefaultPort = 8333;
+        nDefaultPort = 9109; //was 8333;
         nPruneAfterHeight = 100000;
 
         genesis = CreateGenesisBlock_legacy(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
@@ -367,13 +367,13 @@ public:
         pchMessageStart[1] = 0x11;
         pchMessageStart[2] = 0x0a;
         pchMessageStart[3] = 0x0b;
-        nDefaultPort = 18665;
+        this->nDefaultPort = 23143; //was 18665;
         nPruneAfterHeight = 1000;
 
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
-        nEquihashN = N;
-        nEquihashK = K;
+        this->nEquihashN = N;
+        this->nEquihashK = K;
 
         // 1517433514 2018.1.31
         genesis = CreateGenesisBlockTestnet(
@@ -386,9 +386,14 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x3725088af50d5bfa636f5c051887e35b4a117a7c2a46944897e6e91efbe24eb5"));
 
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("testnet-seed.fabnetwork.info", true); 
 
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
+        if (false) {
+            vSeeds.emplace_back("testnet-seed.fabnetwork.info", true);
+            vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
+        } else {
+            LogPrintf("TEST: DNS seeds disabled in order to experiment with the network. ");
+            LogPrintf("TEST: vFixedSeeds disabled in order to experiment with the network. ");
+        }
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -396,7 +401,6 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
-//        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
@@ -469,7 +473,7 @@ public:
         pchMessageStart[1] = 0xbf;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
-        nDefaultPort = 18666;
+        nDefaultPort = 23159; //was 18666;
         nPruneAfterHeight = 1000;
       
         const size_t N = 48, K = 5;
