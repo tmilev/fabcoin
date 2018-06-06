@@ -393,6 +393,7 @@ public:
         } else {
             LogPrintf("TEST: DNS seeds disabled in order to experiment with the network. ");
             LogPrintf("TEST: vFixedSeeds disabled in order to experiment with the network. ");
+            vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testIsolated, pnSeed6_testIsolated + ARRAYLEN(pnSeed6_testIsolated));
         }
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
@@ -402,10 +403,10 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
 
-        fMiningRequiresPeers = true;
-        fDefaultConsistencyChecks = false;
-        fRequireStandard = false;
-        fMineBlocksOnDemand = false;
+        this->fMiningRequiresPeers = true;
+        this->fDefaultConsistencyChecks = false;
+        this->fRequireStandard = false;
+        this->fMineBlocksOnDemand = false;
 
         checkpointData = (CCheckpointData) {
             {
