@@ -98,6 +98,7 @@ bool fLogTimestamps = DEFAULT_LOGTIMESTAMPS;
 bool fLogTimeMicros = DEFAULT_LOGTIMEMICROS;
 bool fLogIPs = DEFAULT_LOGIPS;
 std::atomic<bool> fReopenDebugLog(false);
+std::atomic<bool> fReopenDebugSessionLog(false);
 CTranslationInterface translationInterface;
 
 /** Log categories bitfield. */
@@ -173,7 +174,8 @@ static boost::once_flag debugPrintInitFlag = BOOST_ONCE_INIT;
  * the OS/libc. When the shutdown sequence is fully audited and
  * tested, explicit destruction of these objects can be implemented.
  */
-static FILE* fileout = nullptr;
+FILE* fileout = nullptr;
+FILE* fileoutSession = nullptr;
 static boost::mutex* mutexDebugLog = nullptr;
 static std::list<std::string>* vMsgsBeforeOpenLog;
 
@@ -189,24 +191,25 @@ static void DebugPrintInit()
     vMsgsBeforeOpenLog = new std::list<std::string>;
 }
 
-void OpenDebugLog()
+void OpenDebugLog(const std::string &fileNameNoPath, FILE *&fileOutHandle, const char *mode)
 {
     boost::call_once(&DebugPrintInit, debugPrintInitFlag);
     boost::mutex::scoped_lock scoped_lock(*mutexDebugLog);
 
-    assert(fileout == nullptr);
-    assert(vMsgsBeforeOpenLog);
-    fs::path pathDebug = GetDataDir() / "debug.log";
-    fileout = fsbridge::fopen(pathDebug, "a");
-    if (fileout) {
-        setbuf(fileout, nullptr); // unbuffered
+    assert(fileOutHandle == nullptr);
+    //assert(vMsgsBeforeOpenLog);
+    fs::path pathDebug = GetDataDir() / fileNameNoPath;
+    fileOutHandle = fsbridge::fopen(pathDebug, mode);
+    if (fileOutHandle) {
+        setbuf(fileOutHandle, nullptr); // unbuffered
         // dump buffered messages from before we opened the log
-        while (!vMsgsBeforeOpenLog->empty()) {
-            FileWriteStr(vMsgsBeforeOpenLog->front(), fileout);
-            vMsgsBeforeOpenLog->pop_front();
+        if (vMsgsBeforeOpenLog != nullptr) {
+            while (!vMsgsBeforeOpenLog->empty()) {
+                FileWriteStr(vMsgsBeforeOpenLog->front(), fileOutHandle);
+                vMsgsBeforeOpenLog->pop_front();
+            }
         }
     }
-
     delete vMsgsBeforeOpenLog;
     vMsgsBeforeOpenLog = nullptr;
 }
@@ -326,6 +329,38 @@ static std::string LogTimestampStr(const std::string &str, std::atomic_bool *fSt
     return strStamped;
 }
 
+int LogPrintSessionStr(const std::string &str)
+{
+    int ret = 0; // Returns total number of characters written
+    static std::atomic_bool fStartedNewLine(true);
+
+    std::string strTimestamped = LogTimestampStr(str, &fStartedNewLine);
+    std::cout << "DEBUG: got to here. " << std::endl;
+    std::cout << "DEBUG: fileoutSession is: "  << (long) fileoutSession << std::endl;
+
+    //boost::call_once(&DebugPrintInit, debugPrintInitFlag);
+    // buffer if we haven't opened the log yet
+    if (fileoutSession == nullptr) {
+        //we do not log session messages generated before the initializaiton of the output file.
+        //assert(vMsgsBeforeOpenLog);
+        //ret = strTimestamped.length();
+        //vMsgsBeforeOpenLog->push_back(strTimestamped);
+    }
+    else
+    {
+        // reopen the log file, if requested
+        if (fReopenDebugSessionLog) {
+            fReopenDebugSessionLog = false;
+            fs::path pathDebug = GetDataDir() / "debug_session.log";
+            if (fsbridge::freopen(pathDebug, "w", fileoutSession) != nullptr)
+                setbuf(fileoutSession, nullptr); // unbuffered
+        }
+
+        ret = FileWriteStr(strTimestamped, fileoutSession);
+    }
+  return ret;
+}
+
 int LogPrintStr(const std::string &str)
 {
     int ret = 0; // Returns total number of characters written
@@ -340,8 +375,7 @@ int LogPrintStr(const std::string &str)
         fflush(stdout);
     }
     else if (fPrintToDebugLog)
-    {
-        boost::call_once(&DebugPrintInit, debugPrintInitFlag);
+    {   boost::call_once(&DebugPrintInit, debugPrintInitFlag);
         boost::mutex::scoped_lock scoped_lock(*mutexDebugLog);
 
         // buffer if we haven't opened the log yet
@@ -356,12 +390,13 @@ int LogPrintStr(const std::string &str)
             if (fReopenDebugLog) {
                 fReopenDebugLog = false;
                 fs::path pathDebug = GetDataDir() / "debug.log";
-                if (fsbridge::freopen(pathDebug,"a",fileout) != nullptr)
+                if (fsbridge::freopen(pathDebug, "a", fileout) != nullptr)
                     setbuf(fileout, nullptr); // unbuffered
             }
 
             ret = FileWriteStr(strTimestamped, fileout);
         }
+        LogPrintSessionStr(str);
     }
     return ret;
 }

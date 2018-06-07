@@ -1237,6 +1237,9 @@ bool AppInitLockDataDirectory()
     return true;
 }
 
+extern FILE* fileout;
+extern FILE* fileoutSession;
+
 bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 {
     const CChainParams& chainparams = Params();
@@ -1250,8 +1253,10 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         ShrinkDebugFile();
     }
 
-    if (fPrintToDebugLog)
-        OpenDebugLog();
+    if (fPrintToDebugLog) {
+        OpenDebugLog("debug.log", fileout, "a");
+        OpenDebugLog("debug_session.log", fileoutSession, "w");
+    }
 
     if (!fLogTimestamps)
         LogPrintf("Startup time: %s\n", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()));

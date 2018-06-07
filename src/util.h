@@ -29,6 +29,7 @@
 
 #include <boost/signals2/signal.hpp>
 
+
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
 
@@ -51,6 +52,7 @@ extern bool fLogTimestamps;
 extern bool fLogTimeMicros;
 extern bool fLogIPs;
 extern std::atomic<bool> fReopenDebugLog;
+extern std::atomic<bool> fReopenDebugSessionLog;
 extern CTranslationInterface translationInterface;
 
 extern const char * const FABCOIN_CONF_FILENAME;
@@ -123,6 +125,9 @@ bool GetLogCategory(uint32_t *f, const std::string *str);
 /** Send a string to the log output */
 int LogPrintStr(const std::string &str);
 
+/** Send a string to the session output */
+int LogPrintSessionStr(const std::string &str);
+
 /** Get format string from VA_ARGS for error reporting */
 template<typename... Args> std::string FormatStringFromLogArgs(const char *fmt, const Args&... args) { return fmt; }
 
@@ -180,7 +185,7 @@ void CreatePidFile(const fs::path &path, pid_t pid);
 #ifdef WIN32
 fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif
-void OpenDebugLog();
+void OpenDebugLog(const std::string& fileNameNoPath, FILE *&fileOutHandle, const char *mode);
 void ShrinkDebugFile();
 void runCommand(const std::string& strCommand);
 

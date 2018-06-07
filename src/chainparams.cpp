@@ -391,8 +391,8 @@ public:
             vSeeds.emplace_back("testnet-seed.fabnetwork.info", true);
             vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
         } else {
-            LogPrintf("TEST: DNS seeds disabled in order to experiment with the network. ");
-            LogPrintf("TEST: vFixedSeeds disabled in order to experiment with the network. ");
+            LogPrintf("TEST: DNS seeds disabled in order to experiment with the network.\n");
+            LogPrintf("TEST: vFixedSeeds disabled in order to experiment with the network.\n");
             vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testIsolated, pnSeed6_testIsolated + ARRAYLEN(pnSeed6_testIsolated));
         }
 
