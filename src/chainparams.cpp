@@ -95,6 +95,7 @@ static CBlock CreateGenesisBlock_legacy(const char* pszTimestamp, const CScript&
     genesis.hashPrevBlock.SetNull();
     genesis.nHeight  = 0;
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
+    genesis.nSolution.clear();
     return genesis;
 }
 
@@ -265,7 +266,7 @@ public:
 
         // 1517433514 2018.1.31
         genesis = CreateGenesisBlock(
-            1522249768,
+            1522249768, //March 3 2018
             uint256S("0x000000000000000000000000000000000000000000000000000000000000007f"),
             ParseHex("001895e4c29529f904cf86613cdbddc709a5deb8122360c532ab93dd776a4ad816af47c4cb62ab3ba8840dc4a99373a991f1a56bb25983cab978f4bd3518671872b44ed606b884e8fa94c439f7a9a9be273c929d0116f7dd750b18474139c1d3eb2bb0d1ea467c95120d5ecf91b223f9c9d02f7306076851be1ab0bb4dd40d7a44aa45180cc2caba1302a725fc8e332df520d35f61e429bba2373398448695d43c40dad5459bbae8016aaa0a7259a4f7cd5d938a6bf3d52166c8945a3620775e1ca7cbceab00265791e6eb55db14cadb28f104113f346b8f8a53897d15a73678d8fa94421da59831a0ea3c331ed1150d3c891ed67b0a2287e0fde72d09a1dc008989428f954918932162245ad49d17a52b4c02db629d582b3ef66f77963de0780a57af3b661a0a158b1790e25395bb7a2116405564c1216eac80e7296f364edd574551ddff52e8bb198b4f3fe61c144b034a8ecd959856f3e9ad223c371655e95a08bc56be121eb9e4ab88c8598c71b2214394d02a127f14806119129eff36d2d206b199744d90ad7b966a6a7c0fdc319ca381f5964061c5b6a64ba5d6d3af09fc1871ea0fbe753e34147f32f0a0e1f9acbb5d4e8713f82c8a15432b76039a7d2fb3b511df46bfb65aa1acb63b911b5da25878e8e20d5b2ad23fcc7f04b349175ad1ff1cd46725116d2f2ded4f23dd02ba5e31258ba9868104c657133058db5ccf53f1dfdfd40d48cc6847891c070d8beb06a0835fdf161962837263eaf83e79a2c405cd4233cc964d159e0fc2aad4ed62111dfc2bd5252763d3a719b4237fcb865a56ecd2cc836cb45deb76072dafa5bfc2f6c32837251e90d34e35624258705d2fc1eede3017b3bf7f34c3597021cf69ee3ddfe70509df35aff0207bf7a9aff44d6ea3574e61ce37c3c02ff992db7f904ffb2424f43d18528f1e169875baf001e78645d1e93549fca822cce874b9bd72de14bcc908b83be8436307b56bcc37766051672f0a465fb6fd0b01cab3a3149ad19b7ab11d1968111db04c78124e57e33c73305796ccce1376b697cb9b55cd455a07cd01f5da47bf41a8e23ef8c026da68b308f5054df66a2efce3f12f4ed1354c72e6954ef09addb7b953eec90e91ce6ee4ced42339741357e859ed667bb01de632229ef738bed0434d946ba2745551cc6ca824fbd4b906843ff45be9c2a9ee8e1127405d0665c6090ee5092a46d42429e7b6696dd6937d65697edea8c9b82a9617edc717abcf5bdfb047f45a7b4ab509b06155215926855fcf825b14b51a63a322aa7556691799b672ff150f1fda6d280f35d657b257a6c04eb674779937606e24c64294a2c35d8b9738bc2d753b0b3f595f1455196c2c8ca11bd7bd86d523d5f4441656acc79a31b02db3e3936e58aa84cfe3463baf32cf09dc8839fee402f11c46091accc1786340f67d4e49c480eb99c5f218a5d31cf395f4312aaef38a26ed219df655d088200c5a51be2e55603dc04d54b68de3d2f26ac0742f6553578db6e3e4982d37297564e97af665fdd638bf0d05f4c17a4fc8d3abcf7ab329a7a553a92daf38a522383c77a2b2cfd56d6d06a89a6a575fc73ba67d342e1149dcea061564b92295c4080fe525b60a1b19ba8d442815321817a7c57cdb47767ebe3a425054d492a005d7ac6922cd615678c9c4a05b2698a61dd0fb17c1775a4e2675ac5011b762b8c3175cab6a8e8679cffb0a5a466e679126c3ce54d259d94a9cf6d2b73b99031aef95081ed2a602c008f499c3d95a1de1dd3f4aba0b5dbb6dac950f75a455b1e68d237569965a8cdd380ceaa32e8b9792f3c0df736c25382be58360f511f517ca90fbbce898a198c964b4cace26ead3d6bce7f427ddd73f6fa84c05674426404ce13daa228a563d50"),
             0x2007ffff, 1, 25 * COIN );
@@ -312,7 +313,7 @@ public:
  * Testnet (v3)
  */
 
-#include <chrono>
+#include "genesis.h"
 extern LoggerSession& logBeforeInitialization();
 class CTestNetParams : public CChainParams {
 public:
@@ -381,11 +382,12 @@ public:
 
         // 1517433514 2018.1.31
         genesis = CreateGenesisBlockTestnet(
-            std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
-            uint256S("0x0000000000000000000000000000000000000000000000000000000000000060"),
-            {},
-            0x2007ffff, 1, 25 * COIN );
+                   1528846122, //June 12 2018
+                   uint256S("0x0000000000000000000000000000000000000000000000000000000000000060"),
+                   {},
+                   0x2007ffff, 1, 25 * COIN );
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
+        Scan_nNonce_nSolution(&this->genesis, this->nEquihashN, this->nEquihashK);
         logBeforeInitialization() << "DEBUG: The genesis block: " << genesis.ToString() << LoggerSession::endL;
         //assert(consensus.hashGenesisBlock == uint256S("0x0500238931fa06c38381611e9244d9523926d6dc501664de27d1bff4e22b9afa"));
         //assert(genesis.hashMerkleRoot == uint256S("0x3725088af50d5bfa636f5c051887e35b4a117a7c2a46944897e6e91efbe24eb5"));
@@ -442,7 +444,7 @@ public:
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in rpc activation tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
-        consensus.FABHeight = 24000;
+        consensus.FABHeight = 0;
         consensus.CoinbaseLock = 0;
         consensus.ForceSegwit = false;
 

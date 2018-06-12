@@ -83,6 +83,7 @@ FABCOIN_CORE_H = \
   blockencodings.h \
   chain.h \
   chainparams.h \
+  genesis.h \
   chainparamsbase.h \
   chainparamsseeds.h \
   checkpoints.h \
@@ -334,6 +335,7 @@ libfabcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libfabcoin_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
+  genesis.cpp \
   coins.cpp \
   compressor.cpp \
   core_read.cpp \

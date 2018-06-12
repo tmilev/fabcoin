@@ -60,6 +60,7 @@ void WaitForShutdown(boost::thread_group* threadGroup)
 //
 // Start
 //
+#include "miner.h"
 bool AppInit(int argc, char* argv[])
 {
     boost::thread_group threadGroup;
@@ -130,6 +131,7 @@ bool AppInit(int argc, char* argv[])
         // Set this early so that parameter interactions go to console
         InitLogging();
         InitParameterInteraction();
+
         if (!AppInitBasicSetup())
         {
             // InitError will have been called with detailed error, which ends up on console

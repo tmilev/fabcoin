@@ -91,6 +91,7 @@ public:
         return (nBits == 0);
     }
 
+    uint256 GetHashBeforeParamInitialization() const;
     uint256 GetHash() const;
     uint256 GetHash(const Consensus::Params& params) const;
 

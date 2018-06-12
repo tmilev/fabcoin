@@ -15,7 +15,7 @@
 uint256 CBlockHeader::GetHash(const Consensus::Params& params) const
 {
     int version;
-    std::cout << "DEBUG: Getting hash. " << std::endl;
+    //std::cout << "DEBUG: Getting hash. " << std::endl;
 
     if ((uint32_t) -1 == (uint32_t)params.FABHeight ) {
         version = PROTOCOL_VERSION | SERIALIZE_BLOCK_LEGACY;
@@ -25,6 +25,13 @@ uint256 CBlockHeader::GetHash(const Consensus::Params& params) const
     } else {
         version = PROTOCOL_VERSION | SERIALIZE_BLOCK_LEGACY;
     }
+    CHashWriter writer(SER_GETHASH, version);
+    ::Serialize(writer, *this);
+    return writer.GetHash();
+}
+
+uint256 CBlockHeader::GetHashBeforeParamInitialization() const {
+    int version = PROTOCOL_VERSION;
     CHashWriter writer(SER_GETHASH, version);
     ::Serialize(writer, *this);
     return writer.GetHash();
@@ -47,7 +54,7 @@ std::string CBlock::ToString() const
     if (ParamsAreInitialized())
         hashString = GetHash().ToString();
     else
-        hashString = "(params not initialized)";
+        hashString = this->GetHashBeforeParamInitialization().ToString();
     std::cout << "DEBUG: computed hash string:" << hashString << std::endl;
 
     s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nHeight=%u, nTime=%u, nBits=%08x, nNonce=%s, nSolution=%s, vtx=%u)\n",

@@ -123,7 +123,8 @@ SOURCES += \
     rpc/net.cpp \
 #    rpc/protocol.cpp \
     rpc/rawtransaction.cpp \
-    rpc/server.cpp
+    rpc/server.cpp \
+    genesis.cpp
 
 
 SUBDIRS += \
@@ -252,4 +253,5 @@ HEADERS += \
     rpc/mining.h \
     rpc/protocol.h \
     rpc/register.h \
-    rpc/server.h
+    rpc/server.h \
+    genesis.h
