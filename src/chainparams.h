@@ -116,6 +116,7 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain);
  */
 const CChainParams &Params();
 const CChainParams &GetParams();
+bool ParamsAreInitialized();
 /**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
  * @throws std::runtime_error when the chain is not supported.
