@@ -15,6 +15,7 @@
 #include "serialize.h"
 #include "utilstrencodings.h"
 #include "utiltime.h"
+#include "logging.h"
 
 #include <stdarg.h>
 
@@ -329,36 +330,39 @@ static std::string LogTimestampStr(const std::string &str, std::atomic_bool *fSt
     return strStamped;
 }
 
-int LogPrintSessionStr(const std::string &str)
+LoggerSession& logMain()
+{ //To avoid the static initialization order fiasco.
+  //If we declare LoggerSession logMain outside of this function as a global object,
+  //its constructor may not be called before the first time we use the object.
+  //For example that may (or may not) happen if the object is used before main() starts.
+  //The easiest, and completely reliable,
+  //way solve this issue is by returning a static object from a function body.
+  //For more informaation, google
+  //"static initialization order fiasco".
+  std::cout << "DEBUG: inside logMain" << std::endl;
+  static LoggerSession result(GetDataDir().string() + "/debug_session.log", "");
+  return result;
+}
+
+LoggerSession& logBeforeInitialization()
+{ //To avoid the static initialization order fiasco.
+  //If we declare LoggerSession logMain outside of this function as a global object,
+  //its constructor may not be called before the first time we use the object.
+  //For example that may (or may not) happen if the object is used before main() starts.
+  //The easiest, and completely reliable,
+  //way solve this issue is by returning a static object from a function body.
+  //For more informaation, google
+  //"static initialization order fiasco".
+  std::cout << "DEBUG: inside logMain" << std::endl;
+  static LoggerSession result(GetDataDir(false).string() + "/before_debug_file_initialization.log", "");
+  return result;
+}
+
+void LogPrintSessionStr(const std::string &str)
 {
-    int ret = 0; // Returns total number of characters written
-    static std::atomic_bool fStartedNewLine(true);
-
-    std::string strTimestamped = LogTimestampStr(str, &fStartedNewLine);
-    std::cout << "DEBUG: got to here. " << std::endl;
-    std::cout << "DEBUG: fileoutSession is: "  << (long) fileoutSession << std::endl;
-
-    //boost::call_once(&DebugPrintInit, debugPrintInitFlag);
-    // buffer if we haven't opened the log yet
-    if (fileoutSession == nullptr) {
-        //we do not log session messages generated before the initializaiton of the output file.
-        //assert(vMsgsBeforeOpenLog);
-        //ret = strTimestamped.length();
-        //vMsgsBeforeOpenLog->push_back(strTimestamped);
-    }
-    else
-    {
-        // reopen the log file, if requested
-        if (fReopenDebugSessionLog) {
-            fReopenDebugSessionLog = false;
-            fs::path pathDebug = GetDataDir() / "debug_session.log";
-            if (fsbridge::freopen(pathDebug, "w", fileoutSession) != nullptr)
-                setbuf(fileoutSession, nullptr); // unbuffered
-        }
-
-        ret = FileWriteStr(strTimestamped, fileoutSession);
-    }
-  return ret;
+    std::cout << "DEBUG inside LogPrintSessionStr" << std::endl;
+    logMain() << str;
+    std::cout << "DEBUG exit LogPrintSessionStr" << std::endl;
 }
 
 int LogPrintStr(const std::string &str)
@@ -377,7 +381,7 @@ int LogPrintStr(const std::string &str)
     else if (fPrintToDebugLog)
     {   boost::call_once(&DebugPrintInit, debugPrintInitFlag);
         boost::mutex::scoped_lock scoped_lock(*mutexDebugLog);
-
+        std::cout << "DEBUG Got to here in logprintstr" << std::endl;
         // buffer if we haven't opened the log yet
         if (fileout == nullptr) {
             assert(vMsgsBeforeOpenLog);
@@ -396,7 +400,9 @@ int LogPrintStr(const std::string &str)
 
             ret = FileWriteStr(strTimestamped, fileout);
         }
+        std::cout << "DEBUG Got to here in logprintstr pt 2" << std::endl;
         LogPrintSessionStr(str);
+        std::cout << "DEBUG Got to here in logprintstr pt 3" << std::endl;
     }
     return ret;
 }
@@ -590,7 +596,6 @@ static CCriticalSection csPathCached;
 
 const fs::path &GetDataDir(bool fNetSpecific)
 {
-
     LOCK(csPathCached);
 
     fs::path &path = fNetSpecific ? pathCachedNetSpecific : pathCached;
@@ -613,7 +618,6 @@ const fs::path &GetDataDir(bool fNetSpecific)
         path /= BaseParams().DataDir();
 
     fs::create_directories(path);
-
     return path;
 }
 

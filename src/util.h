@@ -126,7 +126,7 @@ bool GetLogCategory(uint32_t *f, const std::string *str);
 int LogPrintStr(const std::string &str);
 
 /** Send a string to the session output */
-int LogPrintSessionStr(const std::string &str);
+void LogPrintSessionStr(const std::string &str);
 
 /** Get format string from VA_ARGS for error reporting */
 template<typename... Args> std::string FormatStringFromLogArgs(const char *fmt, const Args&... args) { return fmt; }

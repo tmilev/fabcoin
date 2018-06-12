@@ -842,8 +842,10 @@ void InitLogging()
     fLogTimeMicros = gArgs.GetBoolArg("-logtimemicros", DEFAULT_LOGTIMEMICROS);
     fLogIPs = gArgs.GetBoolArg("-logips", DEFAULT_LOGIPS);
 
-    LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    //LogPrintStr("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    //std::cout << "DEBUG: Got to here in initlogging" << std::endl;
     LogPrintf("Fabcoin version %s\n", FormatFullVersion());
+    //std::cout << "DEBUG: Got to here pt 2" << std::endl;
 }
 
 namespace { // Variables internal to initialization process only
@@ -1255,7 +1257,6 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     if (fPrintToDebugLog) {
         OpenDebugLog("debug.log", fileout, "a");
-        OpenDebugLog("debug_session.log", fileoutSession, "w");
     }
 
     if (!fLogTimestamps)
