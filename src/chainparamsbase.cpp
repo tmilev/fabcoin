@@ -12,6 +12,7 @@
 
 const std::string CBaseChainParams::MAIN = "main";
 const std::string CBaseChainParams::TESTNET = "test";
+const std::string CBaseChainParams::TESTNET_NODNS = "testnodns";
 const std::string CBaseChainParams::REGTEST = "regtest";
 const std::string CBaseChainParams::BITMAIN = "bitmain";
 
@@ -46,7 +47,7 @@ class CBaseBitMainParams : public CBaseChainParams
 public:
     CBaseBitMainParams()
     {
-        nRPCPort = 9103; //was 8332
+        nRPCPort = 8332; //was 8332
     }
 };
 
@@ -58,8 +59,21 @@ class CBaseTestNetParams : public CBaseChainParams
 public:
     CBaseTestNetParams()
     {
+        nRPCPort = 18332;
+        strDataDir = "testnet3";
+    }
+};
+
+/**
+ * TestnetNoDNS
+ */
+class CBaseTestNetNoDNSParams : public CBaseChainParams
+{
+public:
+    CBaseTestNetNoDNSParams()
+    {
         nRPCPort = 23117;
-        strDataDir = "testnet3"; //was 18332
+        strDataDir = "testnet_no_dns";
     }
 };
 
@@ -71,7 +85,7 @@ class CBaseRegTestParams : public CBaseChainParams
 public:
     CBaseRegTestParams()
     {
-        nRPCPort = 23131; //was 18443
+        nRPCPort = 18443;
         strDataDir = "regtest";
     }
 };
@@ -90,6 +104,8 @@ std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain
         return std::unique_ptr<CBaseChainParams>(new CBaseMainParams());
     else if (chain == CBaseChainParams::TESTNET)
         return std::unique_ptr<CBaseChainParams>(new CBaseTestNetParams());
+    else if (chain == CBaseChainParams::TESTNET_NODNS)
+        return std::unique_ptr<CBaseChainParams>(new CBaseTestNetNoDNSParams());
     else if (chain == CBaseChainParams::REGTEST)
         return std::unique_ptr<CBaseChainParams>(new CBaseRegTestParams());
     else if (chain == CBaseChainParams::BITMAIN)
@@ -107,11 +123,19 @@ std::string ChainNameFromCommandLine()
 {
     bool fRegTest = gArgs.GetBoolArg("-regtest", false);
     bool fTestNet = gArgs.GetBoolArg("-testnet", false);
-
+    bool fTestNetNoDNS = gArgs.GetBoolArg("-testnetnodns", false);
+    std::cout << "DEBUG: TestNet no dns: " << fTestNetNoDNS << std::endl;
+    std::cout << "DEBUG: TestNet: " << fTestNet << std::endl;
     if (fTestNet && fRegTest)
         throw std::runtime_error("Invalid combination of -regtest and -testnet.");
+    if (fTestNet && fTestNetNoDNS)
+        throw std::runtime_error("Invalid combination of -testnetnodns and -testnet.");
+    if (fRegTest && fTestNetNoDNS)
+        throw std::runtime_error("Invalid combination of -regtest and -testnetnodns.");
     if (fRegTest)
         return CBaseChainParams::REGTEST;
+    if (fTestNetNoDNS)
+        return CBaseChainParams::TESTNET_NODNS;
     if (fTestNet)
         return CBaseChainParams::TESTNET;
     return CBaseChainParams::MAIN;

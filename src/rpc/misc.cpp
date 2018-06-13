@@ -104,6 +104,7 @@ UniValue getinfo(const JSONRPCRequest& request)
     obj.push_back(Pair("proxy",         (proxy.IsValid() ? proxy.proxy.ToStringIPPort() : std::string())));
     obj.push_back(Pair("difficulty",    (double)GetDifficulty()));
     obj.push_back(Pair("testnet",       Params().NetworkIDString() == CBaseChainParams::TESTNET));
+    obj.push_back(Pair("testnet_no_dns",       Params().NetworkIDString() == CBaseChainParams::TESTNET_NODNS));
 #ifdef ENABLE_WALLET
     if (pwallet) {
         obj.push_back(Pair("keypoololdest", pwallet->GetOldestKeyPoolTime()));

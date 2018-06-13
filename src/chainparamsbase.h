@@ -19,6 +19,7 @@ public:
     /** BIP70 chain name strings (main, test or regtest) */
     static const std::string MAIN;
     static const std::string TESTNET;
+    static const std::string TESTNET_NODNS;
     static const std::string REGTEST;
     static const std::string BITMAIN;
 

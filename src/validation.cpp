@@ -1041,7 +1041,10 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     // Check Equihash solution
     bool postfork = block.nHeight >= (uint32_t)consensusParams.FABHeight;
     if (postfork && !CheckEquihashSolution(&block, Params())) {
-        return error("ReadBlockFromDisk: Errors in block header at %s (bad Equihash solution)", pos.ToString());
+        std::stringstream out;
+        out << "ReadBlockFromDisk: Errors in block header at " << pos.ToString() << ": bad Equihash solution with "
+        << "N=" << Params().EquihashN() << ", K=" << Params().EquihashK();
+        return error(out.str().c_str());
     }
     // Check the header
     if (!CheckProofOfWork(block.GetHash(), block.nBits, postfork, consensusParams))
