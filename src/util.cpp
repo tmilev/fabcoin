@@ -344,16 +344,17 @@ LoggerSession& logMain()
 }
 
 LoggerSession& logBeforeInitialization()
-{ //To avoid the static initialization order fiasco.
-  //If we declare LoggerSession logMain outside of this function as a global object,
-  //its constructor may not be called before the first time we use the object.
-  //For example that may (or may not) happen if the object is used before main() starts.
-  //The easiest, and completely reliable,
-  //way solve this issue is by returning a static object from a function body.
-  //For more informaation, google
-  //"static initialization order fiasco".
-  static LoggerSession result(GetDataDir(false).string() + "/before_debug_file_initialization.log", "");
-  return result;
+{
+    //To avoid the static initialization order fiasco.
+    //If we declare LoggerSession logMain outside of this function as a global object,
+    //its constructor may not be called before the first time we use the object.
+    //For example that may (or may not) happen if the object is used before main() starts.
+    //The easiest, and completely reliable,
+    //way solve this issue is by returning a static object from a function body.
+    //For more information, google
+    //"static initialization order fiasco".
+    static LoggerSession result(GetDataDir(false).string() + "/debug_before_initialization.log", "[init]");
+    return result;
 }
 
 void LogPrintSessionStr(const std::string &str)

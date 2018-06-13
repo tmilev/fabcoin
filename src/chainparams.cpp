@@ -384,11 +384,20 @@ public:
         genesis = CreateGenesisBlockTestnet(
                    1528846122, //June 12 2018
                    uint256S("0x0000000000000000000000000000000000000000000000000000000000000060"),
-                   {},
+                    ParseHex(""),
                    0x2007ffff, 1, 25 * COIN );
-        consensus.hashGenesisBlock = genesis.GetHash(consensus);
-        Scan_nNonce_nSolution(&this->genesis, this->nEquihashN, this->nEquihashK);
+        if (this->genesis.nSolution.size() == 0) {
+            logBeforeInitialization() << "Genesis block has no solution specified. Let me attempt to find one for you.\n "
+            << "To avoid the genesis block search in the future and speed up your boot times, "
+            << "please paste the solution found below in the arguments of ParseHex(...) "
+            << "in the appropriate preceding function call. "
+            << LoggerSession::endL;
+            genesis_Scan_nNonce_nSolution(&this->genesis, this->nEquihashN, this->nEquihashK);
+        }
         logBeforeInitialization() << "DEBUG: The genesis block: " << genesis.ToString() << LoggerSession::endL;
+        consensus.hashGenesisBlock = genesis.GetHash(consensus);
+
+
         //assert(consensus.hashGenesisBlock == uint256S("0x0500238931fa06c38381611e9244d9523926d6dc501664de27d1bff4e22b9afa"));
         //assert(genesis.hashMerkleRoot == uint256S("0x3725088af50d5bfa636f5c051887e35b4a117a7c2a46944897e6e91efbe24eb5"));
 

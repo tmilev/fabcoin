@@ -124,7 +124,8 @@ SOURCES += \
 #    rpc/protocol.cpp \
     rpc/rawtransaction.cpp \
     rpc/server.cpp \
-    genesis.cpp
+    genesis.cpp \
+    miscellaneous.cpp
 
 
 SUBDIRS += \
@@ -254,4 +255,5 @@ HEADERS += \
     rpc/protocol.h \
     rpc/register.h \
     rpc/server.h \
-    genesis.h
+    genesis.h \
+    miscellaneous.h

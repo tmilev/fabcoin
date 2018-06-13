@@ -84,6 +84,7 @@ FABCOIN_CORE_H = \
   chain.h \
   chainparams.h \
   genesis.h \
+  miscellaneous.h \
   chainparamsbase.h \
   chainparamsseeds.h \
   checkpoints.h \
@@ -336,6 +337,7 @@ libfabcoin_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
   genesis.cpp \
+  miscellaneous.cpp \
   coins.cpp \
   compressor.cpp \
   core_read.cpp \

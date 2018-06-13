@@ -60,7 +60,6 @@ void WaitForShutdown(boost::thread_group* threadGroup)
 //
 // Start
 //
-#include "miner.h"
 bool AppInit(int argc, char* argv[])
 {
     boost::thread_group threadGroup;
