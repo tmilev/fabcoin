@@ -383,18 +383,28 @@ public:
         // 1517433514 2018.1.31
         genesis = CreateGenesisBlockTestnet(
                    1528846122, //June 12 2018
+                   //uint256S("0x000000000000000000000000000000000000000000000000000000000000006d"),
+                   //ParseHex("00e42aba0aea73ecc3931d263e8e0d9e8d308473765f71b04e73a4bb236963d305890bd3c3e4c7c777019145defced28916e4c12bed92d8fc651c6c7b6beccbade1bd38b"),
                    uint256S("0x0000000000000000000000000000000000000000000000000000000000000060"),
-                    ParseHex(""),
+                   ParseHex(""),
                    0x2007ffff, 1, 25 * COIN );
         if (this->genesis.nSolution.size() == 0) {
             logBeforeInitialization() << "Genesis block has no solution specified. Let me attempt to find one for you.\n "
             << "To avoid the genesis block search in the future and speed up your boot times, "
-            << "please paste the solution found below in the arguments of ParseHex(...) "
-            << "in the appropriate preceding function call. "
+            << LoggerSession::colorGreen << "please paste the solution found below "
+            << LoggerSession::colorNormal << " in the arguments of ParseHex(...) "
+            << "in the appropriate preceding function call around file: " << __FILE__ << ", line: " << __LINE__ << ". "
             << LoggerSession::endL;
             genesis_Scan_nNonce_nSolution(&this->genesis, this->nEquihashN, this->nEquihashK);
+            logBeforeInitialization() << "Genesis block found: " << this->genesis.ToString() << LoggerSession::endL;
+            std::string stringNonce = this->genesis.nNonce.GetHex();
+            std::string solutionString = HexStr(this->genesis.nSolution.begin(), this->genesis.nSolution.end());
+            logBeforeInitialization()
+            << "Need to paste nNonce: " << "\n"
+            << LoggerSession::colorGreen << stringNonce << LoggerSession::endL
+            << "Need to paste nSolution: " << "\n"
+            << LoggerSession::colorGreen << solutionString << LoggerSession::endL;
         }
-        logBeforeInitialization() << "DEBUG: The genesis block: " << genesis.ToString() << LoggerSession::endL;
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
 
 

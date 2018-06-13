@@ -46,30 +46,26 @@ uint256 CBlockHeader::GetHash() const
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    std::cout << "DEBUG: GOT TO before solution" << std::endl;
     std::string solutionString = HexStr(nSolution.begin(), nSolution.end());
-    std::cout << "DEBUG: GOT TO HERE" << std::endl;
 
     std::string hashString = "";
     if (ParamsAreInitialized())
         hashString = GetHash().ToString();
     else
         hashString = this->GetHashBeforeParamInitialization().ToString();
-    std::cout << "DEBUG: computed hash string:" << hashString << std::endl;
 
     s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nHeight=%u, nTime=%u, nBits=%08x, nNonce=%s, nSolution=%s, vtx=%u)\n",
         hashString,
         nVersion,
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),
-        nHeight, nTime, nBits, nNonce.GetHex(),
+        nHeight, nTime, nBits,
+        nNonce.GetHex(),
         solutionString,
         vtx.size());
-    std::cout << "DEBUG: and got t TO HERE" << std::endl;
     for (const auto& tx : vtx) {
         s << "  " << tx->ToString() << "\n";
     }
-    std::cout << "DEBUG: about to return :" << s.str() << std::endl;
     return s.str();
 }
 
