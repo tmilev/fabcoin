@@ -525,17 +525,8 @@ public:
         //assert(genesis.hashMerkleRoot == uint256S("0x3725088af50d5bfa636f5c051887e35b4a117a7c2a46944897e6e91efbe24eb5"));
 
         // nodes with support for servicebits filtering should be at the top
-
-        if (false) {
-            vSeeds.emplace_back("testnet-seed.fabnetwork.info", true);
-            vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
-            this->fMineBlocksOnDemand = false;
-        } else {
-            LogPrintf("TEST: DNS seeds disabled in order to experiment with the network.\n");
-            LogPrintf("TEST: vFixedSeeds disabled in order to experiment with the network.\n");
-            vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testIsolated, pnSeed6_testIsolated + ARRAYLEN(pnSeed6_testIsolated));
-            this->fMineBlocksOnDemand = true;
-        }
+        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testNoDNS, pnSeed6_testNoDNS + ARRAYLEN(pnSeed6_testNoDNS));
+        this->fMineBlocksOnDemand = true;
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);

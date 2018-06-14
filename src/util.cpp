@@ -359,9 +359,7 @@ LoggerSession& logBeforeInitialization()
 
 void LogPrintSessionStr(const std::string &str)
 {
-    //std::cout << "DEBUG inside LogPrintSessionStr" << std::endl;
     logMain() << str;
-    //std::cout << "DEBUG exit LogPrintSessionStr" << std::endl;
 }
 
 int LogPrintStr(const std::string &str)
@@ -398,10 +396,8 @@ int LogPrintStr(const std::string &str)
             }
 
             ret = FileWriteStr(strTimestamped, fileout);
+            LogPrintSessionStr(strTimestamped);
         }
-        //std::cout << "DEBUG Got to here in logprintstr pt 2" << std::endl;
-        LogPrintSessionStr(str);
-        //std::cout << "DEBUG Got to here in logprintstr pt 3" << std::endl;
     }
     return ret;
 }
