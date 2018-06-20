@@ -28,6 +28,7 @@
 #include "wallet/rpcwallet.h"
 #include "wallet/wallet.h"
 #endif
+#include <boost/algorithm/string.hpp>
 
 #include <stdint.h>
 
@@ -885,6 +886,100 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
     return result;
 }
 
+UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHighFees)
+{
+    LOCK(cs_main);
+    CMutableTransaction mtx;
+    // parse hex string from parameter
+    if (!DecodeHexTx(mtx, theTransaction))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+
+    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+    const uint256& hashTx = tx->GetHash();
+
+    CAmount nMaxRawTxFee = maxTxFee;
+    if (allowHighFees)
+        nMaxRawTxFee = 0;
+
+    CCoinsViewCache &view = *pcoinsTip;
+    bool fHaveChain = false;
+    for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
+        const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
+        fHaveChain = !existingCoin.IsSpent();
+    }
+    bool fHaveMempool = mempool.exists(hashTx);
+    if (!fHaveMempool && !fHaveChain) {
+        // push to local node and sync with wallets
+        CValidationState state;
+        bool fMissingInputs;
+        bool fLimitFree = true;
+        if (!AcceptToMemoryPool(mempool, state, std::move(tx), fLimitFree, &fMissingInputs, nullptr, false, nMaxRawTxFee)) {
+            if (state.IsInvalid()) {
+                throw JSONRPCError(RPC_TRANSACTION_REJECTED, strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
+            } else {
+                if (fMissingInputs) {
+                    std::stringstream extraInfo;
+                    extraInfo << "Missing inputs for transaction: " << theTransaction;
+                    throw JSONRPCError(RPC_TRANSACTION_ERROR, extraInfo.str());
+                }
+                throw JSONRPCError(RPC_TRANSACTION_ERROR, state.GetRejectReason());
+            }
+        }
+    } else if (fHaveChain) {
+        throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
+    }
+    if(!g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+
+    CInv inv(MSG_TX, hashTx);
+    g_connman->ForEachNode([&inv](CNode* pnode)
+    {
+        pnode->PushInventory(inv);
+    });
+    return hashTx.GetHex();
+}
+
+UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "sendbulkrawtransactions \"rawtransactions\" \n"
+            "\nSubmits an array of raw transaction [rawTransaction1, rawTransaction2, ...]"
+            "to the local node and network.\n"
+            "Each of the raw transactions rawTransaction1, ... must be serialized and hex-encoded.\n"
+            "\nThis is the bulk version of the sendrawtransaction operation.\n"
+            "\nArguments:\n"
+            "1. \"rawtransactions\"    (array of strings, required) The hex "
+            "strings of the raw transaction, in format such as [rawTransaction1, rawTransaction2, ...].\n"
+            "\nResult:\n"
+            "\"array\"             (arary of hex strings) The hashes for each of the raw transactions in hex. \n"
+            "\nExamples: [to be documented later].\n"
+        );
+    std::vector<std::string> theTransactions;
+    boost::split(theTransactions, request.params[0].get_str(), boost::is_any_of(","));
+    /*std::stringstream tempStream;
+    tempStream << "DEBUG: arguments: \n";
+    for (unsigned i = 0; i < theTransactions.size(); i ++) {
+        tempStream << "argument " << i << ":" << theTransactions[i] << "\n";
+    }
+    throw std::runtime_error(tempStream.str());*/
+    RPCTypeCheck(request.params, {UniValue::VSTR});
+
+    unsigned int numberOfTransactions = theTransactions.size();
+    unsigned maxTransactions = 1000000;
+    if (numberOfTransactions > maxTransactions) {
+        std::stringstream out;
+        out << "Too many transactions: " << numberOfTransactions << ". The maximum allowed is: " << maxTransactions;
+        throw std::runtime_error(out.str());
+    }
+    UniValue result;
+    // parse hex string from parameter
+    for (unsigned counterTransaction = 0; counterTransaction < numberOfTransactions; counterTransaction ++) {
+        result.push_back(sendOneRawTransaction(theTransactions[counterTransaction], false));
+    }
+    return result;
+}
+
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
@@ -908,54 +1003,12 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
             + HelpExampleRpc("sendrawtransaction", "\"signedhex\"")
         );
 
-    LOCK(cs_main);
     RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
-
-    // parse hex string from parameter
-    CMutableTransaction mtx;
-    if (!DecodeHexTx(mtx, request.params[0].get_str()))
-        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
-    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
-    const uint256& hashTx = tx->GetHash();
-
-    CAmount nMaxRawTxFee = maxTxFee;
-    if (request.params.size() > 1 && request.params[1].get_bool())
-        nMaxRawTxFee = 0;
-
-    CCoinsViewCache &view = *pcoinsTip;
-    bool fHaveChain = false;
-    for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
-        const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
-        fHaveChain = !existingCoin.IsSpent();
-    }
-    bool fHaveMempool = mempool.exists(hashTx);
-    if (!fHaveMempool && !fHaveChain) {
-        // push to local node and sync with wallets
-        CValidationState state;
-        bool fMissingInputs;
-        bool fLimitFree = true;
-        if (!AcceptToMemoryPool(mempool, state, std::move(tx), fLimitFree, &fMissingInputs, nullptr, false, nMaxRawTxFee)) {
-            if (state.IsInvalid()) {
-                throw JSONRPCError(RPC_TRANSACTION_REJECTED, strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
-            } else {
-                if (fMissingInputs) {
-                    throw JSONRPCError(RPC_TRANSACTION_ERROR, "Missing inputs");
-                }
-                throw JSONRPCError(RPC_TRANSACTION_ERROR, state.GetRejectReason());
-            }
-        }
-    } else if (fHaveChain) {
-        throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
-    }
-    if(!g_connman)
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
-
-    CInv inv(MSG_TX, hashTx);
-    g_connman->ForEachNode([&inv](CNode* pnode)
-    {
-        pnode->PushInventory(inv);
-    });
-    return hashTx.GetHex();
+    bool allowHighFees = false;
+    if (request.params.size() > 1)
+        allowHighFees = request.params[1].get_bool();
+    std::string theTransaction = request.params[0].get_str();
+    return sendOneRawTransaction(theTransaction, allowHighFees);
 }
 
 static const CRPCCommand commands[] =
@@ -966,6 +1019,7 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   true,  {"hexstring"} },
     { "rawtransactions",    "decodescript",           &decodescript,           true,  {"hexstring"} },
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     false, {"hexstring","allowhighfees"} },
+    { "rawtransactions",    "sendbulkrawtransactions",&sendbulkrawtransactions,false, {"rawtransactions"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  true,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     false, {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
 
