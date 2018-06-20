@@ -137,6 +137,7 @@ public:
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.CoinbaseLock = 0;
         consensus.ForceSegwit = false;
+        consensus.coinBaseMaturity = 0;
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
@@ -209,6 +210,7 @@ public:
         consensus.BIP66Height = 0; 
         consensus.CoinbaseLock = 80000;
         consensus.ForceSegwit = true;
+        consensus.coinBaseMaturity = 0;
 
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("0003ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -292,6 +294,7 @@ public:
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
+        this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
 
         checkpointData = (CCheckpointData) {
             {
@@ -326,6 +329,7 @@ public:
         consensus.BIP66Height = 0;
         consensus.CoinbaseLock = 0;
         consensus.ForceSegwit = false;
+        consensus.coinBaseMaturity = 0;
 
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("0003ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -405,6 +409,7 @@ public:
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
+        this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
 
         checkpointData = (CCheckpointData) {
             {
@@ -441,6 +446,7 @@ public:
         consensus.BIP66Height = 0; 
         consensus.CoinbaseLock = 0;
         consensus.ForceSegwit = false;
+        consensus.coinBaseMaturity = 100;
 
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("0003ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -527,6 +533,7 @@ public:
         // nodes with support for servicebits filtering should be at the top
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testNoDNS, pnSeed6_testNoDNS + ARRAYLEN(pnSeed6_testNoDNS));
         this->fMineBlocksOnDemand = true;
+        this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -570,6 +577,7 @@ public:
         consensus.FABHeight = 0;
         consensus.CoinbaseLock = 0;
         consensus.ForceSegwit = false;
+        consensus.coinBaseMaturity = 100;
 
         consensus.nPowAveragingWindow = 17;
         consensus.nPowMaxAdjustDown = 32;
@@ -632,6 +640,7 @@ public:
         fDefaultConsistencyChecks = true;
         fRequireStandard = false;
         fMineBlocksOnDemand = true;
+        this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
 
         checkpointData = (CCheckpointData) {
             {

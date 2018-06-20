@@ -374,6 +374,7 @@ public:
         ptxTo(&txToIn), nIn(nInIn), nFlags(nFlagsIn), cacheStore(cacheIn), error(SCRIPT_ERR_UNKNOWN_ERROR), txdata(txdataIn) { }
 
     bool operator()();
+    bool checkScript(std::stringstream* extraErrorStream);
 
     void swap(CScriptCheck &check) {
         scriptPubKey.swap(check.scriptPubKey);

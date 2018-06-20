@@ -224,11 +224,19 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
             // If prev is coinbase, check that it's matured
             if (coin.IsCoinBase()) {
                 const Consensus::Params& consensus = ::GetParams().GetConsensus();
-                if (nSpendHeight - coin.nHeight < COINBASE_MATURITY)
+                int coinbaseMaturity = COINBASE_MATURITY;
+                if (consensus.coinBaseMaturity > 0) //<-regtest and testnetnodns only.
+                    coinbaseMaturity = consensus.coinBaseMaturity;
+                if (nSpendHeight - coin.nHeight < coinbaseMaturity) {
+                    std::stringstream errorStream;
+                    errorStream << "Bad transaction: premature spend of coinbase. Top height: " << nSpendHeight
+                    << ", coin height: " << coin.nHeight
+                    << " (coin depth: " << nSpendHeight - coin.nHeight
+                    << "), maturity: " << coinbaseMaturity << " (min depth). ";
                     return state.Invalid(false,
-                        REJECT_INVALID, "bad-txns-premature-spend-of-coinbase",
+                        REJECT_INVALID, errorStream.str(),
                         strprintf("tried to spend coinbase at depth %d", nSpendHeight - coin.nHeight));
-
+                }
                 if( coin.nHeight < consensus.CoinbaseLock && coin.nHeight  != 2 )
                 {
                     if (nSpendHeight - coin.nHeight < consensus.CoinbaseLock)

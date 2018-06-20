@@ -655,8 +655,13 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         }
 
         // No transactions are allowed below minRelayTxFee except from disconnected blocks
-        if (fLimitFree && nModifiedFees < ::minRelayTxFee.GetFee(nSize)) {
-            return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "min relay fee not met");
+        if (fLimitFree) {
+            CAmount expectedFee = ::minRelayTxFee.GetFee(nSize);
+            if (nModifiedFees < expectedFee) {
+                std::stringstream out;
+                out << "Min relay fee of " << expectedFee << " not met by submitted fee: " << nModifiedFees;
+                return state.DoS(0, false, REJECT_INSUFFICIENTFEE, out.str());
+            }
         }
 
         if (nAbsurdFee && nFees > nAbsurdFee)
@@ -1252,9 +1257,13 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight)
 }
 
 bool CScriptCheck::operator()() {
+    return this->checkScript(0);
+}
+
+bool CScriptCheck::checkScript(std::stringstream *extraErrorStream) {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     const CScriptWitness *witness = &ptxTo->vin[nIn].scriptWitness;
-    return VerifyScript(scriptSig, scriptPubKey, witness, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, amount, cacheStore, *txdata), &error);
+    return VerifyScript(scriptSig, scriptPubKey, witness, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, amount, cacheStore, *txdata), &this->error, extraErrorStream);
 }
 
 int GetSpendHeight(const CCoinsViewCache& inputs)
@@ -1293,6 +1302,8 @@ void InitScriptExecutionCache() {
  */
 bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheSigStore, bool cacheFullScriptStore, PrecomputedTransactionData& txdata, std::vector<CScriptCheck> *pvChecks)
 {
+    std::stringstream extraErrorStreamObject;
+    std::stringstream* extraErrorStream = Params().AllowExtraErrorStreamUseInRegTestAndTestNetNoDNSOnly() ? & extraErrorStreamObject : 0;
     if (!tx.IsCoinBase())
     {
         if (!Consensus::CheckTxInputs(tx, state, inputs, GetSpendHeight(inputs)))
@@ -1344,7 +1355,7 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
                 if (pvChecks) {
                     pvChecks->push_back(CScriptCheck());
                     check.swap(pvChecks->back());
-                } else if (!check()) {
+                } else if (!check.checkScript(extraErrorStream)) {
                     if (flags & STANDARD_NOT_MANDATORY_VERIFY_FLAGS) {
                         // Check whether the failure was caused by a
                         // non-mandatory script verification check, such as
@@ -1364,7 +1375,12 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
                     // as to the correct behavior - we may want to continue
                     // peering with non-upgraded nodes even after soft-fork
                     // super-majority signaling has occurred.
-                    return state.DoS(100,false, REJECT_INVALID, strprintf("mandatory-script-verify-flag-failed (%s)", ScriptErrorString(check.GetScriptError())));
+
+                    std::string errorString = strprintf("mandatory-script-verify-flag-failed (%s)", ScriptErrorString(check.GetScriptError()));
+                    if (extraErrorStream != 0) {
+                        errorString += " " + extraErrorStream->str();
+                    }
+                    return state.DoS(100, false, REJECT_INVALID, errorString);
                 }
             }
 

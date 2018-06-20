@@ -63,6 +63,13 @@ public:
 
     const CBlock& GenesisBlock() const { return genesis; }
     CBlock& GenesisBlockNON_CONST() { return genesis; }
+    /** Makes script error messages more descriptive.
+     * Use in regtest and testnetNoDNS only.
+     * Rationale: mallicious user input may end up in the descriptive error messages.
+     * This may end up being a security vulnerability for a non-careful user of the
+     * outputs of the rpc calls.
+     */
+    bool AllowExtraErrorStreamUseInRegTestAndTestNetNoDNSOnly() const {return this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly; }
     /** Make miner wait to have peers to avoid wasting work */
     bool MiningRequiresPeers() const { return fMiningRequiresPeers; }
     /** Default value for -checkmempool and -checkblockindex argument */
@@ -100,6 +107,7 @@ protected:
     bool fDefaultConsistencyChecks;
     bool fRequireStandard;
     bool fMineBlocksOnDemand;
+    bool fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly;
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 };

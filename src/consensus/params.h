@@ -52,7 +52,11 @@ struct Params {
     int CoinbaseLock;
     /** whether segwit is active */
     bool ForceSegwit;
-
+    /** If positive, overrides the constant COINBASE_MATURITY from consensus.h.
+     * The COINBASE_MATURITY specifies the minimal depth of the coin base after which it can be spent.
+     * If coinBaseMaturity is left 0 or negative, the default COINBASE_MATURITY is used instead.
+     */
+    int coinBaseMaturity;
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
