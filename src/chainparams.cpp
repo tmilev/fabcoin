@@ -531,6 +531,14 @@ public:
         //assert(genesis.hashMerkleRoot == uint256S("0x3725088af50d5bfa636f5c051887e35b4a117a7c2a46944897e6e91efbe24eb5"));
 
         // nodes with support for servicebits filtering should be at the top
+        SeedSpec6 pnSeed6_testNoDNS[] = {
+            //ip: 13.232.20.11, ipv6: 0:0:0:0:0:ffff:de8:140b
+            {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0x0d,0xe8,0x14,0x0b}, 23143},
+            //ip: http://18.130.88.126, ipv6:0:0:0:0:0:ffff:1282:587e
+            {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0x12,0x82,0x58,0x7e}, 23143}
+        };
+
+
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testNoDNS, pnSeed6_testNoDNS + ARRAYLEN(pnSeed6_testNoDNS));
         this->fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;

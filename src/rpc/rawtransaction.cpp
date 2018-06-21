@@ -29,6 +29,7 @@
 #include "wallet/wallet.h"
 #endif
 #include <boost/algorithm/string.hpp>
+#include "profiling/profiling.h"
 
 #include <stdint.h>
 
@@ -888,6 +889,8 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
 
 UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHighFees)
 {
+    FunctionProfile profileThis("sendOneRawTransaction");
+    Profiling::theProfiler();
     LOCK(cs_main);
     CMutableTransaction mtx;
     // parse hex string from parameter
@@ -941,6 +944,7 @@ UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHigh
 
 UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("sendBulkRawTransactions");
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "sendbulkrawtransactions \"rawtransactions\" \n"
@@ -982,6 +986,7 @@ UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
 
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("sendRawTransaction");
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             "sendrawtransaction \"hexstring\" ( allowhighfees )\n"

@@ -70,6 +70,8 @@ inline std::string _(const char* psz)
     return rv ? (*rv) : psz;
 }
 
+void LogTimestampStrDoStamp(const std::string& input, std::string& output);
+
 void SetupEnvironment();
 bool SetupNetworking();
 

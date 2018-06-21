@@ -23,6 +23,8 @@
 #include "wallet/walletdb.h"
 #endif
 #include "warnings.h"
+#include "../profiling/profiling.h"
+#include "logging.h"
 
 #include <stdint.h>
 #ifdef HAVE_MALLOC_INFO
@@ -524,6 +526,8 @@ static std::string RPCMallocInfo()
 
 UniValue getperformanceprofile(const JSONRPCRequest& request)
 {
+    LoggerSession::logProfiling() << "DEBUG: Function getperformanceprofile entered" << LoggerSession::endL;
+    FunctionProfile theProfile("getPerformanceProfile");
     /* Please, avoid using the word "pool" here in the RPC interface or help,
      * as users will undoubtedly confuse it with the other "memory pool"
      */
@@ -536,8 +540,10 @@ UniValue getperformanceprofile(const JSONRPCRequest& request)
             "To be documented."
         );
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("profile", "to be implemented.");
+    LoggerSession::logProfiling() << "DEBUG: About to prepare univalue. " << LoggerSession::endL;
+    UniValue result = Profiling::theProfiler().toUniValue();
+    LoggerSession::logProfiling() << "DEBUG: Prepared: " << result.write() << LoggerSession::endL;
+    LoggerSession::logProfiling() << "DEBUG: About to exit getperformanceprofile. " << LoggerSession::endL;
     return result;
 }
 

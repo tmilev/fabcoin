@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include <univalue.h>
+#include "../profiling/profiling.h"
 
 static const std::string WALLET_ENDPOINT_BASE = "/wallet/";
 
@@ -1403,6 +1404,8 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
 
 UniValue listreceivedbyaddress(const JSONRPCRequest& request)
 {
+    Profiling::theProfiler();
+
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;

@@ -297,6 +297,19 @@ std::vector<CLogCategoryActive> ListActiveLogCategories()
     return ret;
 }
 
+void LogTimestampStrDoStamp(const std::string& input, std::string& output)
+{
+    int64_t nTimeMicros = GetTimeMicros();
+    output = DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nTimeMicros/1000000);
+    if (fLogTimeMicros)
+        output += strprintf(".%06d", nTimeMicros%1000000);
+    int64_t mocktime = GetMockTime();
+    if (mocktime) {
+        output += " (mocktime: " + DateTimeStrFormat("%Y-%m-%d %H:%M:%S", mocktime) + ")";
+    }
+    output += ' ' + input;
+}
+
 /**
  * fStartedNewLine is a state variable held by the calling context that will
  * suppress printing of the timestamp when multiple calls are made that don't
@@ -309,17 +322,9 @@ static std::string LogTimestampStr(const std::string &str, std::atomic_bool *fSt
     if (!fLogTimestamps)
         return str;
 
-    if (*fStartedNewLine) {
-        int64_t nTimeMicros = GetTimeMicros();
-        strStamped = DateTimeStrFormat("%Y-%m-%d %H:%M:%S", nTimeMicros/1000000);
-        if (fLogTimeMicros)
-            strStamped += strprintf(".%06d", nTimeMicros%1000000);
-        int64_t mocktime = GetMockTime();
-        if (mocktime) {
-            strStamped += " (mocktime: " + DateTimeStrFormat("%Y-%m-%d %H:%M:%S", mocktime) + ")";
-        }
-        strStamped += ' ' + str;
-    } else
+    if (*fStartedNewLine)
+        LogTimestampStrDoStamp(str, strStamped);
+    else
         strStamped = str;
 
     if (!str.empty() && str[str.size()-1] == '\n')

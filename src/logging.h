@@ -2,7 +2,9 @@
 #define LOGGING_H_header
 #include <fstream>
 #include <iostream>
+#include "util.h"
 
+extern bool fLogTimestamps;
 class LoggerSession
 {
 public:
@@ -71,6 +73,9 @@ public:
         }
         if (inputLogger.flagIncludeExtraDescriptionInNextLogMessage) {
             inputLogger.flagIncludeExtraDescriptionInNextLogMessage = false;
+            std::string timeStamp;
+            LogTimestampStrDoStamp("", timeStamp);
+            inputLogger << timeStamp;
             std::cout << inputLogger.descriptionPrependToLogs;
         }
         inputLogger.theFile << other;
@@ -89,6 +94,9 @@ public:
         this->theFile.close();
         this->flagDeallocated = true;
     }
+    /** Global logger for profiling operations.
+      */
+    static LoggerSession& logProfiling();
 };
 
 #endif // LOGGING_H

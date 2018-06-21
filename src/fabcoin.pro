@@ -125,7 +125,19 @@ SOURCES += \
     rpc/rawtransaction.cpp \
     rpc/server.cpp \
     genesis.cpp \
-    miscellaneous.cpp
+    miscellaneous.cpp \
+    profiling/profiling.cpp \
+    wallet/crypter.cpp \
+    wallet/db.cpp \
+    wallet/feebumper.cpp \
+    wallet/rpcdump.cpp \
+    wallet/rpcwallet.cpp \
+    wallet/wallet.cpp \
+    wallet/walletdb.cpp \
+    wallet/test/accounting_tests.cpp \
+    wallet/test/crypto_tests.cpp \
+    wallet/test/wallet_test_fixture.cpp \
+    wallet/test/wallet_tests.cpp
 
 
 SUBDIRS += \
@@ -256,4 +268,13 @@ HEADERS += \
     rpc/register.h \
     rpc/server.h \
     genesis.h \
-    miscellaneous.h
+    miscellaneous.h \
+    profiling/profiling.h \
+    wallet/coincontrol.h \
+    wallet/crypter.h \
+    wallet/db.h \
+    wallet/feebumper.h \
+    wallet/rpcwallet.h \
+    wallet/wallet.h \
+    wallet/walletdb.h \
+    wallet/test/wallet_test_fixture.h
