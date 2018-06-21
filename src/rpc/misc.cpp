@@ -522,6 +522,25 @@ static std::string RPCMallocInfo()
 }
 #endif
 
+UniValue getperformanceprofile(const JSONRPCRequest& request)
+{
+    /* Please, avoid using the word "pool" here in the RPC interface or help,
+     * as users will undoubtedly confuse it with the other "memory pool"
+     */
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "gerperformanceprofile\n"
+            "Returns an object containing a performance profile of the system.\n"
+            "Arguments:\n"
+            "\nResult:\n"
+            "To be documented."
+        );
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("profile", "to be implemented.");
+    return result;
+}
+
 UniValue getmemoryinfo(const JSONRPCRequest& request)
 {
     /* Please, avoid using the word "pool" here in the RPC interface or help,
@@ -654,6 +673,7 @@ static const CRPCCommand commands[] =
   //  --------------------- ------------------------  -----------------------  ----------
     { "control",            "getinfo",                &getinfo,                true,  {} }, /* uses wallet if enabled */
     { "control",            "getmemoryinfo",          &getmemoryinfo,          true,  {"mode"} },
+    { "control",            "getperformanceprofile",  &getperformanceprofile,  true,  {} },
     { "util",               "validateaddress",        &validateaddress,        true,  {"address"} }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true,  {"nrequired","keys"} },
     { "util",               "verifymessage",          &verifymessage,          true,  {"address","signature","message"} },
