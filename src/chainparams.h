@@ -10,6 +10,7 @@
 #include "consensus/params.h"
 #include "primitives/block.h"
 #include "protocol.h"
+#include "validation.h"
 
 #include <memory>
 #include <vector>
@@ -69,6 +70,17 @@ public:
      * This may end up being a security vulnerability for a non-careful user of the
      * outputs of the rpc calls.
      */
+    int DefaultDescendantLimit() const {
+        if (this->nDefaultDescendantLimit > 0)
+            return this->nDefaultDescendantLimit;
+        return DEFAULT_DESCENDANT_LIMIT;
+    }
+    int DefaultDescendantSizeLimit() const {
+        if (this->nDefaultDescendantSizeLimit > 0)
+            return this->nDefaultDescendantSizeLimit * 1000;
+        return DEFAULT_DESCENDANT_SIZE_LIMIT * 1000;
+    }
+    bool AllowDebugInfo() const {return this->fDebugInfoRegtestAndTestNetNoDNSOnly; }
     bool AllowExtraErrorStreamUseInRegTestAndTestNetNoDNSOnly() const {return this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly; }
     /** Make miner wait to have peers to avoid wasting work */
     bool MiningRequiresPeers() const { return fMiningRequiresPeers; }
@@ -98,6 +110,12 @@ protected:
     uint64_t nPruneAfterHeight;
     unsigned int nEquihashN = 0;
     unsigned int nEquihashK = 0;
+    /** If positive, nDefaultDescendantLimit overrides DEFAULT_DESCENDANT_LIMIT
+     *  In turn, nDefaultDescendantLimit is overriden by gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+     *  See also validation.cpp
+     */
+    int nDefaultDescendantLimit = 0;
+    int nDefaultDescendantSizeLimit = 0;
     std::vector<CDNSSeedData> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
     std::string strNetworkID;
@@ -108,6 +126,7 @@ protected:
     bool fRequireStandard;
     bool fMineBlocksOnDemand;
     bool fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly;
+    bool fDebugInfoRegtestAndTestNetNoDNSOnly;
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 };

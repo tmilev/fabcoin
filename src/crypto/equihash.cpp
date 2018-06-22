@@ -28,6 +28,7 @@
 #include <stdexcept>
 
 #include <boost/optional.hpp>
+#include "../profiling/profiling.h"
 
 EhSolverCancelledException solver_cancelled;
 
@@ -332,6 +333,7 @@ bool Equihash<N,K>::BasicSolve(const eh_HashState& base_state,
                                const std::function<bool(std::vector<unsigned char>)> validBlock,
                                const std::function<bool(EhSolverCancelCheck)> cancelled)
 {
+    FunctionProfile profileThis("Equihash::BasicSolve");
     eh_index init_size { 1 << (CollisionBitLength + 1) };
 
     // 1) Generate first list

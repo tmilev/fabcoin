@@ -918,15 +918,24 @@ UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHigh
         bool fMissingInputs;
         bool fLimitFree = true;
         if (!AcceptToMemoryPool(mempool, state, std::move(tx), fLimitFree, &fMissingInputs, nullptr, false, nMaxRawTxFee)) {
+            std::string rejectReason;
             if (state.IsInvalid()) {
-                throw JSONRPCError(RPC_TRANSACTION_REJECTED, strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
+                rejectReason =state.GetRejectReason();
+                if (Params().AllowDebugInfo()) {
+                    rejectReason += " " + state.GetDebugMessage();
+                }
+                throw JSONRPCError(RPC_TRANSACTION_REJECTED, strprintf("%i: %s", state.GetRejectCode(), rejectReason));
             } else {
                 if (fMissingInputs) {
                     std::stringstream extraInfo;
                     extraInfo << "Missing inputs for transaction: " << theTransaction;
                     throw JSONRPCError(RPC_TRANSACTION_ERROR, extraInfo.str());
                 }
-                throw JSONRPCError(RPC_TRANSACTION_ERROR, state.GetRejectReason());
+                rejectReason = state.GetRejectReason();
+                if (Params().AllowDebugInfo()) {
+                    rejectReason += state.GetDebugMessage();
+                }
+                throw JSONRPCError(RPC_TRANSACTION_ERROR, rejectReason);
             }
         }
     } else if (fHaveChain) {

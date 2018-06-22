@@ -48,6 +48,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/thread.hpp>
+#include "profiling/profiling.h"
 
 #if defined(NDEBUG)
 # error "Fabcoin cannot be compiled without assertions."
@@ -479,6 +480,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
                               bool* pfMissingInputs, int64_t nAcceptTime, std::list<CTransactionRef>* plTxnReplaced,
                               bool fOverrideMempoolLimit, const CAmount& nAbsurdFee, std::vector<COutPoint>& coins_to_uncache)
 {
+    FunctionProfile profileThis("AcceptToMemoryPoolWorker");
     const CTransaction& tx = *ptx;
     const uint256 hash = tx.GetHash();
     AssertLockHeld(cs_main);
@@ -673,8 +675,8 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         CTxMemPool::setEntries setAncestors;
         size_t nLimitAncestors = gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
         size_t nLimitAncestorSize = gArgs.GetArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT)*1000;
-        size_t nLimitDescendants = gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
-        size_t nLimitDescendantSize = gArgs.GetArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT)*1000;
+        size_t nLimitDescendants = gArgs.GetArg("-limitdescendantcount", Params().DefaultDescendantLimit());
+        size_t nLimitDescendantSize = gArgs.GetArg("-limitdescendantcount", Params().DefaultDescendantSizeLimit());
         std::string errString;
         if (!pool.CalculateMemPoolAncestors(entry, setAncestors, nLimitAncestors, nLimitAncestorSize, nLimitDescendants, nLimitDescendantSize, errString)) {
             return state.DoS(0, false, REJECT_NONSTANDARD, "too-long-mempool-chain", false, errString);
@@ -919,6 +921,7 @@ static bool AcceptToMemoryPoolWithTime(const CChainParams& chainparams, CTxMemPo
                         bool* pfMissingInputs, int64_t nAcceptTime, std::list<CTransactionRef>* plTxnReplaced,
                         bool fOverrideMempoolLimit, const CAmount nAbsurdFee)
 {
+    FunctionProfile profileThis("AcceptToMemoryPoolWithTime");
     std::vector<COutPoint> coins_to_uncache;
     bool res = AcceptToMemoryPoolWorker(chainparams, pool, state, tx, fLimitFree, pfMissingInputs, nAcceptTime, plTxnReplaced, fOverrideMempoolLimit, nAbsurdFee, coins_to_uncache);
     if (!res) {
@@ -4396,6 +4399,7 @@ static const uint64_t MEMPOOL_DUMP_VERSION = 1;
 
 bool LoadMempool(void)
 {
+    FunctionProfile profileThis("LoadMempool");
     const CChainParams& chainparams = Params();
     int64_t nExpiryTimeout = gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60;
     FILE* filestr = fsbridge::fopen(GetDataDir() / "mempool.dat", "rb");

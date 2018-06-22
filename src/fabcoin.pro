@@ -137,7 +137,67 @@ SOURCES += \
     wallet/test/accounting_tests.cpp \
     wallet/test/crypto_tests.cpp \
     wallet/test/wallet_test_fixture.cpp \
-    wallet/test/wallet_tests.cpp
+    wallet/test/wallet_tests.cpp \
+    test/addrman_tests.cpp \
+    test/allocator_tests.cpp \
+    test/amount_tests.cpp \
+    test/arith_uint256_tests.cpp \
+    test/base32_tests.cpp \
+    test/base58_tests.cpp \
+    test/base64_tests.cpp \
+    test/bip32_tests.cpp \
+    test/blockencodings_tests.cpp \
+    test/bloom_tests.cpp \
+    test/bswap_tests.cpp \
+    test/checkqueue_tests.cpp \
+    test/coins_tests.cpp \
+    test/compress_tests.cpp \
+    test/crypto_tests.cpp \
+    test/cuckoocache_tests.cpp \
+    test/dbwrapper_tests.cpp \
+    test/DoS_tests.cpp \
+    test/equihash_tests.cpp \
+    test/getarg_tests.cpp \
+    test/hash_tests.cpp \
+    test/key_tests.cpp \
+    test/limitedmap_tests.cpp \
+    test/main_tests.cpp \
+    test/mempool_tests.cpp \
+    test/merkle_tests.cpp \
+    test/miner_tests.cpp \
+    test/multisig_tests.cpp \
+    test/net_tests.cpp \
+    test/netbase_tests.cpp \
+    test/pmt_tests.cpp \
+    test/policyestimator_tests.cpp \
+    test/pow_tests.cpp \
+    test/prevector_tests.cpp \
+    test/raii_event_tests.cpp \
+    test/random_tests.cpp \
+    test/reverselock_tests.cpp \
+    test/rpc_tests.cpp \
+    test/sanity_tests.cpp \
+    test/scheduler_tests.cpp \
+    test/script_P2SH_tests.cpp \
+    test/script_standard_tests.cpp \
+    test/script_tests.cpp \
+    test/scriptnum_tests.cpp \
+    test/serialize_tests.cpp \
+    test/sighash_tests.cpp \
+    test/sigopcount_tests.cpp \
+    test/skiplist_tests.cpp \
+    test/streams_tests.cpp \
+    test/test_fabcoin_fuzzy.cpp \
+    test/test_fabcoin_main.cpp \
+    test/test_fabcoin.cpp \
+    test/timedata_tests.cpp \
+    test/torcontrol_tests.cpp \
+    test/transaction_tests.cpp \
+    test/txvalidationcache_tests.cpp \
+    test/uint256_tests.cpp \
+    test/univalue_tests.cpp \
+    test/util_tests.cpp \
+    test/versionbits_tests.cpp
 
 
 SUBDIRS += \
@@ -277,4 +337,77 @@ HEADERS += \
     wallet/rpcwallet.h \
     wallet/wallet.h \
     wallet/walletdb.h \
-    wallet/test/wallet_test_fixture.h
+    wallet/test/wallet_test_fixture.h \
+    addrdb.h \
+    addrman.h \
+    amount.h \
+    arith_uint256.h \
+    base58.h \
+    blockencodings.h \
+    bloom.h \
+    chain.h \
+    chainparams.h \
+    chainparamsbase.h \
+    chainparamsseeds.h \
+    checkpoints.h \
+    checkqueue.h \
+    clientversion.h \
+    coins.h \
+    compat.h \
+    compressor.h \
+    core_io.h \
+    core_memusage.h \
+    cuckoocache.h \
+    dbwrapper.h \
+    fabcoin-config.h \
+    fs.h \
+    genesis.h \
+    hash.h \
+    httprpc.h \
+    httpserver.h \
+    indirectmap.h \
+    init.h \
+    key.h \
+    keystore.h \
+    limitedmap.h \
+    logging.h \
+    memusage.h \
+    merkleblock.h \
+    miner.h \
+    miscellaneous.h \
+    net_processing.h \
+    net.h \
+    netaddress.h \
+    netbase.h \
+    netmessagemaker.h \
+    noui.h \
+    pow.h \
+    prevector.h \
+    protocol.h \
+    pubkey.h \
+    random.h \
+    reverse_iterator.h \
+    reverselock.h \
+    scheduler.h \
+    serialize.h \
+    streams.h \
+    sync.h \
+    threadinterrupt.h \
+    threadsafety.h \
+    timedata.h \
+    tinyformat.h \
+    torcontrol.h \
+    txdb.h \
+    txmempool.h \
+    ui_interface.h \
+    uint256.h \
+    undo.h \
+    util.h \
+    utilmoneystr.h \
+    utilstrencodings.h \
+    utiltime.h \
+    validation.h \
+    validationinterface.h \
+    version.h \
+    versionbits.h \
+    warnings.h

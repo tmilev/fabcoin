@@ -277,6 +277,8 @@ crypto_libfabcoin_crypto_a_SOURCES = \
   crypto/chacha20.h \
   crypto/chacha20.cpp \
   crypto/common.h \
+  profiling/profiling.h \
+  profiling/profiling.cpp \
   crypto/equihash.cpp \
   crypto/equihash.h \
   crypto/equihash.tcc \

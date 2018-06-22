@@ -295,6 +295,9 @@ public:
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
+        this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
+        this->nDefaultDescendantLimit = 0;
+        this->nDefaultDescendantSizeLimit = 0;
 
         checkpointData = (CCheckpointData) {
             {
@@ -410,6 +413,9 @@ public:
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
+        this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
+        this->nDefaultDescendantLimit = 0;
+        this->nDefaultDescendantSizeLimit = 0;
 
         checkpointData = (CCheckpointData) {
             {
@@ -542,6 +548,9 @@ public:
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testNoDNS, pnSeed6_testNoDNS + ARRAYLEN(pnSeed6_testNoDNS));
         this->fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
+        this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
+        this->nDefaultDescendantLimit = 2000;
+        this->nDefaultDescendantSizeLimit = 1000;
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -649,6 +658,9 @@ public:
         fRequireStandard = false;
         fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
+        this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
+        this->nDefaultDescendantLimit = 2000;
+        this->nDefaultDescendantSizeLimit = 1000;
 
         checkpointData = (CCheckpointData) {
             {
