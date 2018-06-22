@@ -36,6 +36,7 @@
 #include <stdint.h>
 
 #include <univalue.h>
+#include "../profiling/profiling.h"
 
 unsigned int ParseConfirmTarget(const UniValue& value)
 {
@@ -267,6 +268,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
 
 UniValue generatetoaddress(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("generatetoaddress");
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
         throw std::runtime_error(
             "generatetoaddress nblocks address (maxtries)\n"
@@ -307,6 +309,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
 
 UniValue getmininginfo(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getmininginfo");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getmininginfo\n"
@@ -1129,6 +1132,7 @@ UniValue estimaterawfee(const JSONRPCRequest& request)
 
 UniValue getgenerate(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getgenerate");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
         "getgenerate\n"

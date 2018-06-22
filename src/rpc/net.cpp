@@ -22,6 +22,7 @@
 #include "warnings.h"
 
 #include <univalue.h>
+#include "../profiling/profiling.h"
 
 UniValue getconnectioncount(const JSONRPCRequest& request)
 {
@@ -66,7 +67,7 @@ UniValue ping(const JSONRPCRequest& request)
 }
 
 UniValue getpeerinfo(const JSONRPCRequest& request)
-{
+{   FunctionProfile reportThis("getpeerinfo");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getpeerinfo\n"
@@ -347,6 +348,7 @@ UniValue getaddednodeinfo(const JSONRPCRequest& request)
 
 UniValue getnettotals(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getnettotals");
     if (request.fHelp || request.params.size() > 0)
         throw std::runtime_error(
             "getnettotals\n"
@@ -413,6 +415,7 @@ static UniValue GetNetworksInfo()
 
 UniValue getnetworkinfo(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getnetworkinfo");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getnetworkinfo\n"

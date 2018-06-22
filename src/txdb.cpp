@@ -13,6 +13,7 @@
 #include "util.h"
 #include "ui_interface.h"
 #include "init.h"
+#include "profiling/profiling.h"
 
 #include <stdint.h>
 

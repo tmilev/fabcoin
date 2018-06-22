@@ -25,6 +25,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <univalue.h>
+#include "../profiling/profiling.h"
 
 
 std::string static EncodeDumpTime(int64_t nTime) {
@@ -546,6 +547,7 @@ UniValue importwallet(const JSONRPCRequest& request)
 
 UniValue dumpprivkey(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("dumpprivkey");
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;

@@ -420,6 +420,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
 UniValue decoderawtransaction(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("decoderawtransaction");
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "decoderawtransaction \"hexstring\"\n"
@@ -986,7 +987,7 @@ UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
 
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("sendRawTransaction");
+    FunctionProfile profileThis("sendrawtransaction");
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             "sendrawtransaction \"hexstring\" ( allowhighfees )\n"

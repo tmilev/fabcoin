@@ -14,6 +14,7 @@
 #include <memenv.h>
 #include <stdint.h>
 #include <algorithm>
+#include "profiling/profiling.h"
 
 class CFabcoinLevelDBLogger : public leveldb::Logger {
 public:
@@ -192,7 +193,11 @@ bool CDBWrapper::IsEmpty()
 CDBIterator::~CDBIterator() { delete piter; }
 bool CDBIterator::Valid() { return piter->Valid(); }
 void CDBIterator::SeekToFirst() { piter->SeekToFirst(); }
-void CDBIterator::Next() { piter->Next(); }
+void CDBIterator::Next()
+{
+    FunctionProfile profileThis("CDBIterator::Next");
+    piter->Next();
+}
 
 namespace dbwrapper_private {
 

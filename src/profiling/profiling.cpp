@@ -14,13 +14,18 @@ LoggerSession& LoggerSession::logProfiling()
 UniValue Profiling::toUniValue()
 {
     boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
-    UniValue result;
-    result.setObject();
-    UniValue numCalls;
-    numCalls.setObject();
+    UniValue result(UniValue::VOBJ);
+    UniValue functionStats(UniValue::VOBJ);
     for (auto iterator = this->functionStats.begin(); iterator != this->functionStats.end(); iterator ++)
-        numCalls.pushKV(iterator->second->name, iterator->second->numCalls);
-    result.pushKV("numCalls", numCalls);
+    {
+        UniValue currentStat(UniValue::VOBJ);
+        currentStat.pushKV("numCalls", iterator->second->numCalls);
+        currentStat.pushKV("runTimeTotalInMicroseconds", iterator->second->timeTotalRunTime);
+        currentStat.pushKV("runTimeSubordinatesInMicroseconds", iterator->second->timeSubordinates);
+        currentStat.pushKV("runTimeExcludingSubordinatesInMicroseconds", iterator->second->timeTotalRunTime - iterator->second->timeSubordinates);
+        functionStats.pushKV(iterator->second->name, currentStat);
+    }
+    result.pushKV("functionStats", functionStats);
     UniValue theThreads;
     theThreads.setArray();
     for (auto iterator = this->threadStacks.begin(); iterator != this->threadStacks.end(); iterator ++) {
@@ -57,6 +62,8 @@ void FunctionStats::initialize(const std::string& inputName)
 {
     this->name = inputName;
     this->numCalls = 0;
+    this->timeSubordinates = 0;
+    this->timeTotalRunTime = 0;
 }
 
 FunctionProfile::FunctionProfile(const std::string& name)
@@ -68,7 +75,7 @@ FunctionProfile::FunctionProfile(const std::string& name)
     auto iterator = threadStacks.find(this->threadId);
     if (iterator == threadStacks.end())
     {
-        threadStacks[this->threadId] = std::make_shared<std::vector<std::string> >();
+        threadStacks[this->threadId] = std::make_shared<std::vector<FunctionProfileData> >();
         iterator = threadStacks.find(this->threadId);
     }
     if (iterator == threadStacks.end())
@@ -76,17 +83,20 @@ FunctionProfile::FunctionProfile(const std::string& name)
         LoggerSession::logProfiling() << "Fatal error while creating new thread stack. " << LoggerSession::endL;
         assert(false);
     }
-    std::vector<std::string>& theStack = *(iterator->second);
+    std::vector<FunctionProfileData>& theStack = *(iterator->second);
+    FunctionProfileData currentFunctionProfile;
     if (theStack.size() > 0)
-        this->extendedName = theStack[theStack.size() - 1] + "->";
-    this->extendedName += name;
-    theStack.push_back(this->extendedName);
-    if (Profiling::theProfiler().functionStats.find(this->extendedName) == Profiling::theProfiler().functionStats.end())
+        currentFunctionProfile.extendedName = theStack[theStack.size() - 1].extendedName + "->";
+    currentFunctionProfile.extendedName += name;
+    currentFunctionProfile.timeStart = std::chrono::system_clock::now();
+    currentFunctionProfile.timeSubordinates = 0;
+    theStack.push_back(currentFunctionProfile);
+    if (Profiling::theProfiler().functionStats.find(currentFunctionProfile.extendedName) == Profiling::theProfiler().functionStats.end())
     {
-        Profiling::theProfiler().functionStats[this->extendedName] = std::make_shared<FunctionStats>();
-        Profiling::theProfiler().functionStats[this->extendedName]->initialize(this->extendedName);
+        Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName] = std::make_shared<FunctionStats>();
+        Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->initialize(currentFunctionProfile.extendedName);
     }
-    Profiling::theProfiler().functionStats[this->extendedName]->numCalls ++;
+    Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->numCalls ++;
 }
 
 FunctionProfile::~FunctionProfile()
@@ -100,6 +110,19 @@ FunctionProfile::~FunctionProfile()
         LoggerSession::logProfiling() << "Fatal error in function profile destructor. " << LoggerSession::endL;
         assert(false);
     }
-    std::vector<std::string>& theStack = *(iterator->second);
+    std::vector<FunctionProfileData>& theStack = *(iterator->second);
+    FunctionProfileData& last = theStack[theStack.size() - 1];
+    FunctionStats& currentStats = *Profiling::theProfiler().functionStats[last.extendedName];
+    auto timeEnd = std::chrono::system_clock::now();
+    long currentTotalRunTime = std::chrono::duration_cast<std::chrono::microseconds> (timeEnd - last.timeStart).count();
+    currentStats.timeTotalRunTime += currentTotalRunTime;
+    currentStats.timeSubordinates += last.timeSubordinates;
+    if (theStack.size() > 1)
+    {
+        FunctionProfileData& secondToLast = theStack[theStack.size() - 2];
+        secondToLast.timeSubordinates += currentTotalRunTime;
+    }
+    //LoggerSession::logProfiling() << LoggerSession::colorRed
+    //<< currentStats.timeInFunctionBody.count() << LoggerSession::endL;
     theStack.pop_back();
 }

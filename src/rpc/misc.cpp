@@ -48,6 +48,7 @@
  **/
 UniValue getinfo(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getinfo");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getinfo\n"
@@ -526,8 +527,7 @@ static std::string RPCMallocInfo()
 
 UniValue getperformanceprofile(const JSONRPCRequest& request)
 {
-    LoggerSession::logProfiling() << "DEBUG: Function getperformanceprofile entered" << LoggerSession::endL;
-    FunctionProfile theProfile("getPerformanceProfile");
+    FunctionProfile theProfile("getperformanceprofile");
     /* Please, avoid using the word "pool" here in the RPC interface or help,
      * as users will undoubtedly confuse it with the other "memory pool"
      */
@@ -539,16 +539,13 @@ UniValue getperformanceprofile(const JSONRPCRequest& request)
             "\nResult:\n"
             "To be documented."
         );
-
-    LoggerSession::logProfiling() << "DEBUG: About to prepare univalue. " << LoggerSession::endL;
     UniValue result = Profiling::theProfiler().toUniValue();
-    LoggerSession::logProfiling() << "DEBUG: Prepared: " << result.write() << LoggerSession::endL;
-    LoggerSession::logProfiling() << "DEBUG: About to exit getperformanceprofile. " << LoggerSession::endL;
     return result;
 }
 
 UniValue getmemoryinfo(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getmemoryinfo");
     /* Please, avoid using the word "pool" here in the RPC interface or help,
      * as users will undoubtedly confuse it with the other "memory pool"
      */

@@ -34,6 +34,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include "../profiling/profiling.h"
 
 struct CUpdatedBlock
 {
@@ -225,6 +226,7 @@ UniValue getblockcount(const JSONRPCRequest& request)
 
 UniValue getbestblockhash(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getbestblockhash");
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getbestblockhash\n"
@@ -662,6 +664,7 @@ UniValue getmempoolentry(const JSONRPCRequest& request)
 
 UniValue getblockhash(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getblockhash");
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getblockhash height\n"
@@ -753,6 +756,7 @@ UniValue getblockheader(const JSONRPCRequest& request)
 
 UniValue getblock(const JSONRPCRequest& request)
 {
+    FunctionProfile profileThis("getblock");
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
             "getblock \"blockhash\" ( verbosity legacy) \n"
