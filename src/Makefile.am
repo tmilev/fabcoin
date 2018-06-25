@@ -327,6 +327,8 @@ libfabcoin_consensus_a_SOURCES = \
   script/script_error.h \
   util.h \
   util.cpp \
+  utiltime.h \
+  utiltime.cpp \
   serialize.h \
   tinyformat.h \
   uint256.cpp \
