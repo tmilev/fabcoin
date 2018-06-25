@@ -20,9 +20,9 @@ UniValue Profiling::toUniValue()
     {
         UniValue currentStat(UniValue::VOBJ);
         currentStat.pushKV("numCalls", iterator->second->numCalls);
-        currentStat.pushKV("runTimeTotalInMicroseconds", iterator->second->timeTotalRunTime);
-        currentStat.pushKV("runTimeSubordinatesInMicroseconds", iterator->second->timeSubordinates);
-        currentStat.pushKV("runTimeExcludingSubordinatesInMicroseconds", iterator->second->timeTotalRunTime - iterator->second->timeSubordinates);
+        currentStat.pushKV("runTimeTotalInMicroseconds", (int64_t) iterator->second->timeTotalRunTime);
+        currentStat.pushKV("runTimeSubordinatesInMicroseconds", (int64_t) iterator->second->timeSubordinates);
+        currentStat.pushKV("runTimeExcludingSubordinatesInMicroseconds", (int64_t) (iterator->second->timeTotalRunTime - iterator->second->timeSubordinates));
         functionStats.pushKV(iterator->second->name, currentStat);
     }
     result.pushKV("functionStats", functionStats);
