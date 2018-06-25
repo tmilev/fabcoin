@@ -325,6 +325,8 @@ libfabcoin_consensus_a_SOURCES = \
   script/script.h \
   script/script_error.cpp \
   script/script_error.h \
+  util.h \
+  util.cpp \
   serialize.h \
   tinyformat.h \
   uint256.cpp \
@@ -477,7 +479,7 @@ if GLIBC_BACK_COMPAT
 endif
 
 libfabcoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libfabcoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS) $(LIBEQUIHASH_LIBS)
+libfabcoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS) $(LIBEQUIHASH_LIBS) $(LIBUNIVALUE)
 libfabcoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_FABCOIN_INTERNAL -DNO_UTIL_LOG
 libfabcoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
