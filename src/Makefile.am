@@ -481,8 +481,8 @@ if GLIBC_BACK_COMPAT
 endif
 
 libfabcoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libfabcoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS) $(LIBEQUIHASH_LIBS) $(LIBUNIVALUE)
-libfabcoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_FABCOIN_INTERNAL -DNO_UTIL_LOG
+libfabcoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS) $(LIBEQUIHASH_LIBS) $(LIBUNIVALUE) $(SSL_LIBS) $(CRYPTO_LIBS)
+libfabcoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_FABCOIN_INTERNAL -DNO_UTIL_LOG $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 libfabcoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif

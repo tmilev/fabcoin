@@ -17,3 +17,4 @@ When adding new sources, you need to input them in the file
 ```Makefile.am```
 
 Make sure you test that the toolchain ```./autogen.sh->./configure->make``` works. 
+
