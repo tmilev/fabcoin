@@ -7,6 +7,7 @@
 #include <boost/thread.hpp>
 #include "../univalue/include/univalue.h"
 #include <chrono>
+#include <deque>
 
 
 class FunctionStats
@@ -14,9 +15,15 @@ class FunctionStats
 public:
     std::string name;
     int numCalls;
+    int recordFinishTimesEveryNCalls;
+    std::deque<std::chrono::system_clock::time_point> finishTimes;
+    std::deque<int> finishTimeNumCalls;
     long timeSubordinates;
     long timeTotalRunTime;
-    void initialize(const std::string& inputName);
+    void initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls);
+    void accountFinishTime(long inputDuration, long inputRunTimeSubordinates, const std::chrono::system_clock::time_point& timeEnd);
+    //Not thread safe:
+    UniValue toUniValue()const;
 };
 
 class FunctionProfileData
@@ -32,7 +39,43 @@ class FunctionProfile
 {
 public:
     unsigned long threadId;
-    FunctionProfile(const std::string& name);
+    /**
+     * Name is the string used to construct an identifier of the function.
+     * Each FunctionProfile is identified via:
+     *
+     * name0->name1->...->nameN->name,
+     *
+     * where name is the input given in the constructor, and
+     * name0, ..., nameN are the names of all FunctionProfiles are still exist on the stack.
+     * The stack names name0, ..., nameN names are fetched from the Profiling::Profiling() global object.
+     *
+     * Different calls of FunctionProfile are expected to use different names.
+     * Names are expected to not contain the - or > symbols.
+     *
+     *
+     * recordFinishTimesEveryNCalls tells the profiler to record the universal time
+     * during which the function call was completed every recordFinishTimesEveryNCalls calls of the function.
+     *
+     * If Profiling::fAllowFinishTimeProfiling is set to false
+     * (defaults: false on mainnet and testnet, true on testnetnodns and regtest),
+     * then recordFinishTimesEveryNCalls will be ignored.
+     * If Profiling::fAllowFinishTimeProfiling is set to true, then recordFinishTimesEveryNCalls
+     * will be processed as follows.
+     *
+     * If recordFinishTimesEveryNCalls is zero or negative, no times are recorded.
+     * If recordFinishTimesEveryNCalls is 1, all function call times will be recorded (with old recordings pruned).
+     * If recordFinishTimesEveryNCalls is, say, 10, the function call times will be recorded on
+     * call 10th, 20th, 30th, ... calls (old recordings pruned).
+     *
+     * Only the latest Profiling::nMaxNumberFinishTimes finish times are recorded,
+     * all earlier finish times will be discarded.
+     *
+     * Original use case: we are using this to time actions accross a network: say, compare the
+     * completion times of the 1000th call of AcceptToMemoryPoolWorker
+     * on one machine to the 1000th call of AcceptToMemoryPoolWorker on
+     * a different machine in the network.
+     */
+    FunctionProfile(const std::string& name, int recordFinishTimesEveryNCalls = - 1);
     ~FunctionProfile();
 };
 
@@ -69,6 +112,8 @@ public:
      * for regtest and testnetnodns, and is turned off for testnet and mainnet.
      */
     static bool fAllowProfiling;
+    static bool fAllowFinishTimeProfiling;
+    static unsigned int nMaxNumberFinishTimes;
     /** Returns a global profiling object.
      * Avoids the static initalization order fiasco.
      */

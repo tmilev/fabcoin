@@ -987,6 +987,7 @@ UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
         throw std::runtime_error(out.str());
     }
     UniValue result;
+    result.setArray();
     // parse hex string from parameter
     for (unsigned counterTransaction = 0; counterTransaction < numberOfTransactions; counterTransaction ++) {
         result.push_back(sendOneRawTransaction(theTransactions[counterTransaction], false));

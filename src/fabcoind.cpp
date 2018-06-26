@@ -63,14 +63,18 @@ void InitProfiling() {
     bool foundProfilingFlags = false;
     if (profilingOn != "notset") {
         Profiling::fAllowProfiling = true;
+        Profiling::fAllowFinishTimeProfiling = true;
         foundProfilingFlags = true;
+
     }
     if (profilingOff != "notset") { //<- overrides profilingon if both flags are set
         Profiling::fAllowProfiling = false;
+        Profiling::fAllowFinishTimeProfiling = false;
         foundProfilingFlags = true;
     }
     if (!foundProfilingFlags) {
         Profiling::fAllowProfiling = Params().ProfilingRecommended();
+        Profiling::fAllowFinishTimeProfiling = Profiling::fAllowProfiling;
     }
 }
 
