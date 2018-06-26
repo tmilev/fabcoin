@@ -6,7 +6,12 @@
 
 LoggerSession& LoggerSession::logProfiling()
 {
-    static LoggerSession theLogger(baseFolderComputedRunTime + "/log_profiling.log", "[profiler] ");
+    if (LoggerSession::baseFolderComputedRunTime == "") {
+        std::cout << "This should not happen: profiler is running before the base folder is initialized. Please call LogMain() "
+        << "before you start the system's profiling. ";
+        assert(false);
+    }
+    static LoggerSession theLogger(LoggerSession::baseFolderComputedRunTime + "/log_profiling.log", "[profiler] ");
     return theLogger;
 }
 
