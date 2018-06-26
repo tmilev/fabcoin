@@ -2068,6 +2068,7 @@ static void DoWarning(const std::string& strWarning)
 
 /** Update chainActive and related internal data structures. */
 void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
+    FunctionProfile profileThis("UpdateTip");
     chainActive.SetTip(pindexNew);
 
     // New best block

@@ -28,6 +28,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validationinterface.h"
+#include "profiling/profiling.h"
 
 #if USE_CUDA
 #include "cuda/eqcuda.hpp"
@@ -126,6 +127,7 @@ void BlockAssembler::resetBlock()
 
 std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, bool fMineWitnessTx)
 {
+    FunctionProfile profileThis("BlockAssembler::CreateNewBlock", 10);
     int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
