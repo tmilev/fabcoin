@@ -1,13 +1,12 @@
 #include "profiling.h"
 #include <iostream>
 #include "../logging.h"
-#include "../util.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 
 LoggerSession& LoggerSession::logProfiling()
 {
-    static LoggerSession theLogger(GetDataDir().string() + "/log_profiling.log", "[profiler] ");
+    static LoggerSession theLogger(baseFolderComputedRunTime + "/log_profiling.log", "[profiler] ");
     return theLogger;
 }
 

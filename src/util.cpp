@@ -344,7 +344,12 @@ LoggerSession& logMain()
   //way solve this issue is by returning a static object from a function body.
   //For more informaation, google
   //"static initialization order fiasco".
-  static LoggerSession result(GetDataDir().string() + "/debug_session.log", "");
+  static bool firstRun = true;
+  if (firstRun) {
+      firstRun = false;
+      LoggerSession::baseFolderComputedRunTime = GetDataDir().string();
+  }
+  static LoggerSession result(LoggerSession::baseFolderComputedRunTime + "/debug_session.log", "");
   LoggerSession::timeStamper = &LogTimestampStrDoStamp; //<- initializing time stamper function.
   return result;
 }

@@ -15,6 +15,7 @@ class LoggerSession
 public:
     //Pointer to a function that takes as input const std::string& and std::string& and returns void:
     static functionWithTwoStringInputs timeStamper;
+    static std::string baseFolderComputedRunTime;
     static std::string consoleColorRed() {
         return "\e[91m";
     }
