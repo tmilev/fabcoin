@@ -86,7 +86,7 @@ FABCOIN_CORE_H = \
   genesis.h \
   miscellaneous.h \
   profiling/profiling.h \
-  logging.cpp \
+  logging.h \
   chainparamsbase.h \
   chainparamsseeds.h \
   checkpoints.h \
@@ -280,6 +280,8 @@ crypto_libfabcoin_crypto_a_SOURCES = \
   crypto/common.h \
   profiling/profiling.h \
   profiling/profiling.cpp \
+  logging.h \
+  logging.cpp \
   crypto/equihash.cpp \
   crypto/equihash.h \
   crypto/equihash.tcc \
