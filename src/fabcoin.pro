@@ -197,7 +197,8 @@ SOURCES += \
     test/uint256_tests.cpp \
     test/univalue_tests.cpp \
     test/util_tests.cpp \
-    test/versionbits_tests.cpp
+    test/versionbits_tests.cpp \
+    logging.cpp
 
 
 SUBDIRS += \

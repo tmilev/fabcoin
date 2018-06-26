@@ -2,12 +2,19 @@
 #define LOGGING_H_header
 #include <fstream>
 #include <iostream>
-#include "util.h"
+//The following include creates the need for a mind-boggling refactoring of the input file
+//needed to create the make file of fabcoind, so we circumvent including it with
+//pointers to functions.
+//#include "util.h"
 
 extern bool fLogTimestamps;
+
+typedef void (*functionWithTwoStringInputs) (const std::string& input, std::string& output);
 class LoggerSession
 {
 public:
+    //Pointer to a function that takes as input const std::string& and std::string& and returns void:
+    static functionWithTwoStringInputs timeStamper;
     static std::string consoleColorRed() {
         return "\e[91m";
     }
@@ -73,9 +80,11 @@ public:
         }
         if (inputLogger.flagIncludeExtraDescriptionInNextLogMessage) {
             inputLogger.flagIncludeExtraDescriptionInNextLogMessage = false;
-            std::string timeStamp;
-            LogTimestampStrDoStamp("", timeStamp);
-            inputLogger << timeStamp;
+            if (inputLogger.timeStamper != 0) {
+                std::string timeStamp;
+                inputLogger.timeStamper("", timeStamp);
+                inputLogger << timeStamp;
+            }
             std::cout << inputLogger.descriptionPrependToLogs;
         }
         inputLogger.theFile << other;

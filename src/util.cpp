@@ -345,6 +345,7 @@ LoggerSession& logMain()
   //For more informaation, google
   //"static initialization order fiasco".
   static LoggerSession result(GetDataDir().string() + "/debug_session.log", "");
+  LoggerSession::timeStamper = &LogTimestampStrDoStamp; //<- initializing time stamper function.
   return result;
 }
 
