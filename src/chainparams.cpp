@@ -296,6 +296,7 @@ public:
         fMineBlocksOnDemand = false;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
+        this->fProfilingRecommended = false;
         this->nDefaultDescendantLimit = 0;
         this->nDefaultDescendantSizeLimit = 0;
 
@@ -414,6 +415,7 @@ public:
         fMineBlocksOnDemand = false;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
+        this->fProfilingRecommended = false;
         this->nDefaultDescendantLimit = 0;
         this->nDefaultDescendantSizeLimit = 0;
 
@@ -549,6 +551,7 @@ public:
         this->fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
+        this->fProfilingRecommended = true;
         this->nDefaultDescendantLimit = 2000;
         this->nDefaultDescendantSizeLimit = 1000;
 
@@ -659,6 +662,7 @@ public:
         fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
+        this->fProfilingRecommended = true;
         this->nDefaultDescendantLimit = 2000;
         this->nDefaultDescendantSizeLimit = 1000;
 

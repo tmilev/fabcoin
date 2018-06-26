@@ -80,6 +80,7 @@ public:
             return this->nDefaultDescendantSizeLimit * 1000;
         return DEFAULT_DESCENDANT_SIZE_LIMIT * 1000;
     }
+    bool ProfilingRecommended() const {return this->fProfilingRecommended; }
     bool AllowDebugInfo() const {return this->fDebugInfoRegtestAndTestNetNoDNSOnly; }
     bool AllowExtraErrorStreamUseInRegTestAndTestNetNoDNSOnly() const {return this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly; }
     /** Make miner wait to have peers to avoid wasting work */
@@ -127,6 +128,7 @@ protected:
     bool fMineBlocksOnDemand;
     bool fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly;
     bool fDebugInfoRegtestAndTestNetNoDNSOnly;
+    bool fProfilingRecommended;
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 };

@@ -19,6 +19,7 @@
 #include "httpserver.h"
 #include "httprpc.h"
 #include "utilstrencodings.h"
+#include "profiling/profiling.h"
 
 #include <boost/thread.hpp>
 
@@ -53,6 +54,23 @@ void WaitForShutdown(boost::thread_group* threadGroup)
     {
         Interrupt(*threadGroup);
         threadGroup->join_all();
+    }
+}
+
+void InitProfiling() {
+    std::string profilingOn = gArgs.GetArg("-profilingon", "notset");
+    std::string profilingOff = gArgs.GetArg("-profilingoff", "notset");
+    bool foundProfilingFlags = false;
+    if (profilingOn != "notset") {
+        Profiling::fAllowProfiling = true;
+        foundProfilingFlags = true;
+    }
+    if (profilingOff != "notset") { //<- overrides profilingon if both flags are set
+        Profiling::fAllowProfiling = false;
+        foundProfilingFlags = true;
+    }
+    if (!foundProfilingFlags) {
+        Profiling::fAllowProfiling = Params().ProfilingRecommended();
     }
 }
 
@@ -116,6 +134,7 @@ bool AppInit(int argc, char* argv[])
             fprintf(stderr, "Error: %s\n", e.what());
             return false;
         }
+        InitProfiling();
 
         // Error out when loose non-argument tokens are encountered on command line
         for (int i = 1; i < argc; i++) {

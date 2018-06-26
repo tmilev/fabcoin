@@ -124,6 +124,7 @@ std::string ChainNameFromCommandLine()
     bool fRegTest = gArgs.GetBoolArg("-regtest", false);
     bool fTestNet = gArgs.GetBoolArg("-testnet", false);
     bool fTestNetNoDNS = gArgs.GetBoolArg("-testnetnodns", false);
+
     //std::cout << "DEBUG: TestNet no dns: " << fTestNetNoDNS << std::endl;
     //std::cout << "DEBUG: TestNet: " << fTestNet << std::endl;
     if (fTestNet && fRegTest)

@@ -4,6 +4,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 
+bool Profiling::fAllowProfiling = false;
+
 LoggerSession& LoggerSession::logProfiling()
 {
     if (LoggerSession::baseFolderComputedRunTime == "") {
@@ -44,7 +46,15 @@ UniValue Profiling::toUniValue()
 Profiling::Profiling()
 {
     this->centralLock = std::make_shared<boost::mutex>();
-    LoggerSession::logProfiling() << LoggerSession::colorGreen << "Profiler created. " << LoggerSession::endL;
+    if (this->fAllowProfiling) {
+        LoggerSession::logProfiling() << LoggerSession::colorGreen
+        << "Profiler on [default for testnetnodns and regtest]."
+        << LoggerSession::colorRed << " To turn off (overriding defaults) use option -profilingoff";
+    } else {
+        LoggerSession::logProfiling() << LoggerSession::colorRed << "Profiler off [default for testnet and mainnet]."
+        << LoggerSession::colorGreen << " To turn on (overriding defaults) use option -profilingon";
+    }
+    LoggerSession::logProfiling() << LoggerSession::endL;
 }
 
 Profiling& Profiling::theProfiler()
