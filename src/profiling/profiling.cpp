@@ -19,8 +19,15 @@ LoggerSession& LoggerSession::logProfiling()
 
 UniValue Profiling::toUniValue()
 {
-    boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
     UniValue result(UniValue::VOBJ);
+    if (!Profiling::fAllowProfiling) {
+        result.pushKV ("error", "Profiling is off. Default for testnet and mainnet. "
+                                "Override by running fabcoind with -profilingon option. "
+                                "Please note that profiling is a introduces timing attacks security risks. "
+                                "DO NOT USE profiling on mainnet unless you know what you are doing. ");
+        return result;
+    }
+    boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
     UniValue functionStats(UniValue::VOBJ);
     for (auto iterator = this->functionStats.begin(); iterator != this->functionStats.end(); iterator ++)
     {
@@ -55,6 +62,8 @@ Profiling::Profiling()
         << LoggerSession::colorGreen << " To turn on (overriding defaults) use option -profilingon";
     }
     LoggerSession::logProfiling() << LoggerSession::endL;
+    LoggerSession::logProfiling() << LoggerSession::colorYellow
+    << "DO NOT use profiling on mainnet unless you know what are doing. " << LoggerSession::endL;
 }
 
 Profiling& Profiling::theProfiler()
@@ -82,6 +91,8 @@ void FunctionStats::initialize(const std::string& inputName)
 
 FunctionProfile::FunctionProfile(const std::string& name)
 {
+    if (!Profiling::fAllowProfiling)
+        return;
     auto lockSharedPointer = Profiling::theProfiler().centralLock;
     boost::lock_guard<boost::mutex> lockGuard (*lockSharedPointer);
     auto& threadStacks = Profiling::theProfiler().threadStacks;
@@ -115,6 +126,8 @@ FunctionProfile::FunctionProfile(const std::string& name)
 
 FunctionProfile::~FunctionProfile()
 {
+    if (!Profiling::fAllowProfiling)
+        return;
     auto lockSharedPointer = Profiling::theProfiler().centralLock;
     boost::lock_guard<boost::mutex> lockGuard (*lockSharedPointer);
     auto& threadStacks = Profiling::theProfiler().threadStacks;
