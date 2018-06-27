@@ -297,6 +297,7 @@ public:
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
         this->fProfilingRecommended = false;
+        this->fTxIdReceiveTimeLoggingAllowed = false;
         this->nDefaultDescendantLimit = 0;
         this->nDefaultDescendantSizeLimit = 0;
 
@@ -416,6 +417,7 @@ public:
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = false;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = false;
         this->fProfilingRecommended = false;
+        this->fTxIdReceiveTimeLoggingAllowed = false;
         this->nDefaultDescendantLimit = 0;
         this->nDefaultDescendantSizeLimit = 0;
 
@@ -550,6 +552,7 @@ public:
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testNoDNS, pnSeed6_testNoDNS + ARRAYLEN(pnSeed6_testNoDNS));
         this->fMineBlocksOnDemand = true;
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
+        this->fTxIdReceiveTimeLoggingAllowed = true;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
         this->fProfilingRecommended = true;
         this->nDefaultDescendantLimit = 2000;
@@ -663,6 +666,7 @@ public:
         this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly = true;
         this->fDebugInfoRegtestAndTestNetNoDNSOnly = true;
         this->fProfilingRecommended = true;
+        this->fTxIdReceiveTimeLoggingAllowed = true;
         this->nDefaultDescendantLimit = 2000;
         this->nDefaultDescendantSizeLimit = 1000;
 

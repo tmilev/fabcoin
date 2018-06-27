@@ -9,21 +9,61 @@
 #include <chrono>
 #include <deque>
 
+class Statistic
+{
+public:
+    //Assumptions:
+    //We are making statistics for non-negative integers.
+    //Original use case: statistics in microseconds.
+    std::string name;
+    int numSamples;
+    long total;
+    bool fHistogramInitialized;
+    unsigned int desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram;
+    unsigned int desiredNumberOfHistogramBucketsMinusOne;
+    unsigned int numCallsUpdateHistogramRecursively;
+    double meanUsedToComputeBuckets;
+    int desiredIntervalSize;
+    std::vector<int> sampleMeasurements;
+    std::vector<int> histogramIntervals;
+    //<- If the elements of histogramIntervals are x_0, x_2, ... , x_{N-1},
+    // then the buckets of the histogram are:
+    // (-\infty, x_0], (x_0, x_1], (x_1, x_2], ..., (x_{N-2}, x_{N-1}], (x_{N-1}, \infty)
+    std::unordered_map<int, int> histogram;
+    double standardDeviationNoBesselCorrection();
+    UniValue toUniValue() const;
+    UniValue toUniValueHistogram() const;
+    double computeMean();
+    bool isInHistogramBucketRange(int value, unsigned int firstPossibleBucketIndex, unsigned int lastPossibleBucketIndex);
+    bool isInHistogramBucketRangeLeft(int value, unsigned int firstPossibleBucketIndex);
+    bool isInHistogramBucketRangeRight(int value, unsigned int lastPossibleBucketIndex);
+    void updateHistogram(int value);
+    void updateHistogramRecursively(
+        int value,
+        unsigned int firstPossibleBucketIndex,
+        unsigned int lastPossibleBucketIndex,
+        int recursionDepth
+    );
+    void accountToHistogram(unsigned int index);
+    void accountStatistic(int value);
+    void initialize(const std::string& inputName);
+    void initializeHistogramIfPossible();
+    Statistic();
+};
 
 class FunctionStats
 {
 public:
     std::string name;
-    int numCalls;
     int recordFinishTimesEveryNCalls;
     std::deque<std::chrono::system_clock::time_point> finishTimes;
     std::deque<int> finishTimeNumCalls;
-    long timeSubordinates;
-    long timeTotalRunTime;
+    Statistic timeSubordinates;
+    Statistic timeTotalRunTime;
     void initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls);
     void accountFinishTime(long inputDuration, long inputRunTimeSubordinates, const std::chrono::system_clock::time_point& timeEnd);
     //Not thread safe:
-    UniValue toUniValue()const;
+    UniValue toUniValue() const;
 };
 
 class FunctionProfileData
@@ -113,6 +153,7 @@ public:
      */
     static bool fAllowProfiling;
     static bool fAllowFinishTimeProfiling;
+    static bool fAllowTxIdReceiveTimeLogging;
     static unsigned int nMaxNumberFinishTimes;
     /** Returns a global profiling object.
      * Avoids the static initalization order fiasco.

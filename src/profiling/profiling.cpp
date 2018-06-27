@@ -3,10 +3,194 @@
 #include "../logging.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
+#include <cmath>
+#include <iomanip>
 
 bool Profiling::fAllowProfiling = false;
 bool Profiling::fAllowFinishTimeProfiling = false;
 unsigned int Profiling::nMaxNumberFinishTimes = 1000;
+bool Profiling::fAllowTxIdReceiveTimeLogging = false;
+
+Statistic::Statistic()
+{
+    this->initialize("");
+}
+
+double Statistic::computeMean()
+{
+    return ((double) this->total) / ((double) this->numSamples);
+}
+
+void Statistic::updateHistogram(int value) {
+    //std::cout << "Calling update histogram for: " << this->name << std::endl;
+    this->updateHistogramRecursively(value, 0, this->histogramIntervals.size(), 0);
+}
+
+bool Statistic::isInHistogramBucketRangeLeft(int value, unsigned int firstPossibleBucketIndex)
+{
+    if (firstPossibleBucketIndex == 0)
+        return true;
+    return value > this->histogramIntervals[firstPossibleBucketIndex - 1];
+}
+
+bool Statistic::isInHistogramBucketRangeRight(int value, unsigned int lastPossibleBucketIndex)
+{
+    if (lastPossibleBucketIndex == this->histogramIntervals.size())
+        return true;
+    return value <= this->histogramIntervals[lastPossibleBucketIndex];
+}
+
+bool Statistic::isInHistogramBucketRange(int value, unsigned int firstPossibleBucketIndex, unsigned int lastPossibleBucketIndex)
+{
+    if (!this->isInHistogramBucketRangeLeft(value, firstPossibleBucketIndex))
+        return false;
+    if (!this->isInHistogramBucketRangeRight(value, lastPossibleBucketIndex))
+        return false;
+    return true;
+}
+
+void Statistic::accountToHistogram(unsigned int index)
+{
+    if (this->histogram.find(index) == this->histogram.end()) {
+        this->histogram[index] = 0;
+    }
+    this->histogram[index] ++;
+}
+
+void Statistic::updateHistogramRecursively(int value, unsigned int firstPossibleBucketIndex, unsigned int lastPossibleBucketIndex, int recursionDepth)
+{
+    this->numCallsUpdateHistogramRecursively ++;
+    if (recursionDepth > 100) {
+        std::cout << "Too deeply nested. Value: " << value << ". First possible index: "
+                  << firstPossibleBucketIndex << ". Last possible index: " << lastPossibleBucketIndex
+                  << "." << std::endl;
+        assert(false);
+    }
+    recursionDepth ++;
+    if (lastPossibleBucketIndex < firstPossibleBucketIndex) {
+        std::cout << "This should not happen: bucket indices out of order. ";
+        assert(false);
+    }
+    if (firstPossibleBucketIndex == lastPossibleBucketIndex) {
+        this->accountToHistogram(firstPossibleBucketIndex);
+        return;
+    }
+    unsigned int intermediateIndexLeft = (firstPossibleBucketIndex + lastPossibleBucketIndex) / 2;
+    unsigned int intermediateIndexRight = intermediateIndexLeft + 1;
+    if (intermediateIndexLeft == lastPossibleBucketIndex) {
+        intermediateIndexLeft --;
+    }
+    if (intermediateIndexRight > lastPossibleBucketIndex) {
+        intermediateIndexRight = lastPossibleBucketIndex;
+    }
+    if (this->isInHistogramBucketRange(value, firstPossibleBucketIndex, intermediateIndexLeft)) {
+        this->updateHistogramRecursively(value, firstPossibleBucketIndex, intermediateIndexLeft, recursionDepth);
+        return;
+    }
+    if (this->isInHistogramBucketRange(value, intermediateIndexRight, lastPossibleBucketIndex)) {
+        this->updateHistogramRecursively(value, intermediateIndexRight, lastPossibleBucketIndex, recursionDepth);
+        return;
+    }
+    std::cout << "This piece of code should be unreachable. " << std::endl;
+    assert(false);
+}
+
+UniValue Statistic::toUniValueHistogram() const {
+    UniValue result;
+    result.setObject();
+    UniValue content;
+    content.setObject();
+    UniValue bucketDescriptions;
+    bucketDescriptions.setObject();
+    for (auto iterator = this->histogram.begin(); iterator != this->histogram.end(); iterator ++) {
+        unsigned int currentBucketIndex = iterator->first;
+        content.pushKV(std::to_string(currentBucketIndex), std::to_string(iterator->second));
+        UniValue currentBucketDescription;
+        currentBucketDescription.setArray();
+        if (currentBucketIndex > 0) {
+            currentBucketDescription.push_back((int64_t) this->histogramIntervals[currentBucketIndex - 1]);
+        } else {
+            currentBucketDescription.push_back((int64_t) - 1);
+        }
+        if (currentBucketIndex < this->histogramIntervals.size() ) {
+            currentBucketDescription.push_back((int64_t) this->histogramIntervals[currentBucketIndex]);
+        }
+        bucketDescriptions.pushKV(std::to_string(iterator->first), currentBucketDescription);
+    }
+    result.pushKV("content", content);
+    result.pushKV("bucketDescriptions", bucketDescriptions);
+    result.pushKV("numCallsUpdateHistogramRecursively", (int64_t) this->numCallsUpdateHistogramRecursively);
+    return result;
+}
+
+UniValue Statistic::toUniValue() const {
+    UniValue result;
+    result.setObject();
+    result.pushKV("numSamples", (int64_t) this->numSamples);
+    result.pushKV("total", (int64_t) this->total);
+    result.pushKV("meanUsedToCenterHistogram", (int64_t) this->meanUsedToComputeBuckets);
+    result.pushKV("desiredHistogramIntervalSize", (int64_t) this->desiredIntervalSize);
+    if (this->fHistogramInitialized) {
+        result.pushKV("histogram", this->toUniValueHistogram());
+    }
+    return result;
+}
+
+
+void Statistic::initializeHistogramIfPossible()
+{
+    if (this->fHistogramInitialized)
+        return;
+    if (this->sampleMeasurements.size() < this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram)
+        return;
+    this->meanUsedToComputeBuckets = this->computeMean();
+    // we want approximately 500 buckets to the left of the mean and 500 buckets to the right.
+    unsigned int halfTheBuckets = this->desiredNumberOfHistogramBucketsMinusOne / 2;
+    double desiredIntervalSizeDouble = this->meanUsedToComputeBuckets / halfTheBuckets;
+
+    int meanInteger = (int) this->meanUsedToComputeBuckets;
+    this->desiredIntervalSize = (int) std::floor(desiredIntervalSizeDouble);
+    if (this->desiredIntervalSize <= 0) {
+        this->desiredIntervalSize = 1;
+    }
+    int currentBucket = meanInteger - halfTheBuckets * this->desiredIntervalSize;
+    this->histogramIntervals.reserve(this->desiredNumberOfHistogramBucketsMinusOne + 1);
+    for (unsigned i = 0; i < this->desiredNumberOfHistogramBucketsMinusOne; i++) {
+        if (currentBucket > 0)
+            this->histogramIntervals.push_back(currentBucket);
+        currentBucket += this->desiredIntervalSize;
+    }
+    for (unsigned i = 0; i< this->sampleMeasurements.size(); i++) {
+        this->updateHistogram(this->sampleMeasurements[i]);
+    }
+    this->fHistogramInitialized = true;
+}
+
+void Statistic::initialize(const std::string& inputName)
+{
+    this->name = inputName;
+    this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram = 100;
+    this->fHistogramInitialized = false;
+    this->desiredNumberOfHistogramBucketsMinusOne = 100;
+    this->numSamples = 0;
+    this->total = 0;
+    this->numCallsUpdateHistogramRecursively = 0;
+    this->desiredIntervalSize = 0;
+    this->meanUsedToComputeBuckets = 0;
+}
+
+void Statistic::accountStatistic(int value)
+{
+    this->numSamples ++;
+    if (this->sampleMeasurements.size() < this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram) {
+        this->sampleMeasurements.push_back(value);
+    }
+    this->total += value;
+    this->initializeHistogramIfPossible();
+    if (this->fHistogramInitialized) {
+        this->updateHistogram(value);
+    }
+}
 
 LoggerSession& LoggerSession::logProfiling()
 {
@@ -22,10 +206,11 @@ LoggerSession& LoggerSession::logProfiling()
 UniValue FunctionStats::toUniValue() const
 {
     UniValue result(UniValue::VOBJ);
-    result.pushKV("numCalls", this->numCalls);
-    result.pushKV("runTimeTotalInMicroseconds", (int64_t) this->timeTotalRunTime);
-    result.pushKV("runTimeSubordinatesInMicroseconds", (int64_t) this->timeSubordinates);
-    result.pushKV("runTimeExcludingSubordinatesInMicroseconds", (int64_t) (this->timeTotalRunTime - this->timeSubordinates));
+    result.pushKV("runTime", this->timeTotalRunTime.toUniValue());
+    if (this->timeSubordinates.total > 0) {
+        result.pushKV("runTimeSubordinates", this->timeSubordinates.toUniValue());
+    }
+    result.pushKV("runTimeExcludingSubordinatesInMicroseconds", (int64_t) (this->timeTotalRunTime.total - this->timeSubordinates.total));
     if (!Profiling::fAllowFinishTimeProfiling) {
         return result;
     }
@@ -48,7 +233,7 @@ UniValue FunctionStats::toUniValue() const
         //<- now we have our milliseconds.
         std::tm timeGM = *std::gmtime(&timeNoMilliseconds);
         //<-Not thread safe. Not leaking, the pointer points to a statically allocated (shared) object.
-        timeWithMsStream << std::put_time(&timeGM, "%Y.%m.%d.%H.%M.%S") << "." << milliseconds;
+        timeWithMsStream << std::put_time(&timeGM, "%Y.%m.%d.%H.%M.%S") << "." << std::setw(3) << std::setfill('0') << milliseconds;
         //timeWithMsStream.str() finally contains our date/time with milliseconds.
         timeStats.pushKV(std::to_string(*iteratorNumCalls), timeWithMsStream.str());
     }
@@ -116,19 +301,19 @@ unsigned long getThreadId()
 
 void FunctionStats::accountFinishTime(long inputDuration, long inputRunTimeSubordinates, const std::chrono::system_clock::time_point& timeEnd)
 {
-    this->timeTotalRunTime += inputDuration;
-    this->timeSubordinates += inputRunTimeSubordinates;
+    this->timeTotalRunTime.accountStatistic(inputDuration);
+    this->timeSubordinates.accountStatistic(inputRunTimeSubordinates);
     if (!Profiling::fAllowFinishTimeProfiling) {
         return;
     }
     if (this->recordFinishTimesEveryNCalls <= 0) {
         return;
     }
-    if (this->numCalls % this->recordFinishTimesEveryNCalls != 0) {
+    if (this->timeTotalRunTime.numSamples % this->recordFinishTimesEveryNCalls != 0) {
         return;
     }
     this->finishTimes.push_back(timeEnd);
-    this->finishTimeNumCalls.push_back(this->numCalls);
+    this->finishTimeNumCalls.push_back(this->timeTotalRunTime.numSamples);
     while (this->finishTimes.size() > Profiling::nMaxNumberFinishTimes) {
         //<- this loop should not run more than once.
         this->finishTimes.pop_front();
@@ -139,9 +324,8 @@ void FunctionStats::accountFinishTime(long inputDuration, long inputRunTimeSubor
 void FunctionStats::initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls)
 {
     this->name = inputName;
-    this->numCalls = 0;
-    this->timeSubordinates = 0;
-    this->timeTotalRunTime = 0;
+    this->timeSubordinates.initialize(inputName + "_subordinates");
+    this->timeTotalRunTime.initialize(inputName + "_runtime");
     this->recordFinishTimesEveryNCalls = inputRecordFinishTimesEveryNCalls;
 }
 
@@ -177,7 +361,6 @@ FunctionProfile::FunctionProfile(const std::string& name, int recordFinishTimesE
         Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName] = std::make_shared<FunctionStats>();
         Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->initialize(currentFunctionProfile.extendedName, recordFinishTimesEveryNCalls);
     }
-    Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->numCalls ++;
 }
 
 FunctionProfile::~FunctionProfile()

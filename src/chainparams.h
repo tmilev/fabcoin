@@ -80,6 +80,7 @@ public:
             return this->nDefaultDescendantSizeLimit * 1000;
         return DEFAULT_DESCENDANT_SIZE_LIMIT * 1000;
     }
+    bool TxIdReceiveTimeLoggingAllowed() const {return this->fTxIdReceiveTimeLoggingAllowed; }
     bool ProfilingRecommended() const {return this->fProfilingRecommended; }
     bool AllowDebugInfo() const {return this->fDebugInfoRegtestAndTestNetNoDNSOnly; }
     bool AllowExtraErrorStreamUseInRegTestAndTestNetNoDNSOnly() const {return this->fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly; }
@@ -129,6 +130,7 @@ protected:
     bool fAllowExtraErrorStreamUseInRegtestAndTestNetNoDNSOnly;
     bool fDebugInfoRegtestAndTestNetNoDNSOnly;
     bool fProfilingRecommended;
+    bool fTxIdReceiveTimeLoggingAllowed;
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 };

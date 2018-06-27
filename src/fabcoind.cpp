@@ -65,7 +65,6 @@ void InitProfiling() {
         Profiling::fAllowProfiling = true;
         Profiling::fAllowFinishTimeProfiling = true;
         foundProfilingFlags = true;
-
     }
     if (profilingOff != "notset") { //<- overrides profilingon if both flags are set
         Profiling::fAllowProfiling = false;
@@ -76,6 +75,7 @@ void InitProfiling() {
         Profiling::fAllowProfiling = Params().ProfilingRecommended();
         Profiling::fAllowFinishTimeProfiling = Profiling::fAllowProfiling;
     }
+    Profiling::fAllowTxIdReceiveTimeLogging = Params().TxIdReceiveTimeLoggingAllowed();
 }
 
 //////////////////////////////////////////////////////////////////////////////
