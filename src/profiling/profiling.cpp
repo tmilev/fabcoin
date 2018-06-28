@@ -9,11 +9,12 @@
 bool Profiling::fAllowProfiling = false;
 bool Profiling::fAllowFinishTimeProfiling = false;
 unsigned int Profiling::nMaxNumberFinishTimes = 1000;
+unsigned int Profiling::nMaxNumberTxsToAccount = 20000;
 bool Profiling::fAllowTxIdReceiveTimeLogging = false;
 
 Statistic::Statistic()
 {
-    this->initialize("");
+    this->initialize("", 100);
 }
 
 double Statistic::computeMean()
@@ -170,10 +171,10 @@ void Statistic::initializeHistogramIfPossible()
     this->fHistogramInitialized = true;
 }
 
-void Statistic::initialize(const std::string& inputName)
+void Statistic::initialize(const std::string& inputName, int inputDesiredNumberOfSamplesBeforeWeSetupHistogram)
 {
     this->name = inputName;
-    this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram = 200;
+    this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram = inputDesiredNumberOfSamplesBeforeWeSetupHistogram;
     this->fHistogramInitialized = false;
     this->desiredNumberOfHistogramBucketsMinusOne = 100;
     this->numSamples = 0;
@@ -243,6 +244,23 @@ UniValue FunctionStats::toUniValue() const
     }
     result.pushKV("finishTimes", timeStats);
     return result;
+}
+
+void Profiling::RegisterReceivedTxId(const std::string &txId)
+{
+    if (!this->fAllowTxIdReceiveTimeLogging)
+        return;
+    boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
+    if (this->memoryPoolAcceptanceTimes.find(txId)!= this->memoryPoolAcceptanceTimes.end()) {
+        return;
+    }
+    this->memoryPoolAcceptanceTimeKeys.push_back(txId);
+    this->memoryPoolAcceptanceTimes[txId] = std::chrono::system_clock::now();
+    while (this->memoryPoolAcceptanceTimeKeys.size() > this->nMaxNumberTxsToAccount) {
+        //<- this loop should run only once.
+        this->memoryPoolAcceptanceTimes.erase(this->memoryPoolAcceptanceTimeKeys.front());
+        this->memoryPoolAcceptanceTimeKeys.pop_front();
+    }
 }
 
 UniValue Profiling::toUniValue()
@@ -325,15 +343,15 @@ void FunctionStats::accountFinishTime(long inputDuration, long inputRunTimeSubor
     }
 }
 
-void FunctionStats::initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls)
+void FunctionStats::initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls, int numSamplesTomComputeMean)
 {
     this->name = inputName;
-    this->timeSubordinates.initialize(inputName + "_subordinates");
-    this->timeTotalRunTime.initialize(inputName + "_runtime");
+    this->timeSubordinates.initialize(inputName + "_subordinates", numSamplesTomComputeMean);
+    this->timeTotalRunTime.initialize(inputName + "_runtime", numSamplesTomComputeMean);
     this->recordFinishTimesEveryNCalls = inputRecordFinishTimesEveryNCalls;
 }
 
-FunctionProfile::FunctionProfile(const std::string& name, int recordFinishTimesEveryNCalls)
+FunctionProfile::FunctionProfile(const std::string& name, int recordFinishTimesEveryNCalls, int numSamplesToComputeMean)
 {
     if (!Profiling::fAllowProfiling)
         return;
@@ -363,7 +381,7 @@ FunctionProfile::FunctionProfile(const std::string& name, int recordFinishTimesE
     if (Profiling::theProfiler().functionStats.find(currentFunctionProfile.extendedName) == Profiling::theProfiler().functionStats.end())
     {
         Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName] = std::make_shared<FunctionStats>();
-        Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->initialize(currentFunctionProfile.extendedName, recordFinishTimesEveryNCalls);
+        Profiling::theProfiler().functionStats[currentFunctionProfile.extendedName]->initialize(currentFunctionProfile.extendedName, recordFinishTimesEveryNCalls, numSamplesToComputeMean);
     }
 }
 

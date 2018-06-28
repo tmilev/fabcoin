@@ -480,7 +480,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
                               bool* pfMissingInputs, int64_t nAcceptTime, std::list<CTransactionRef>* plTxnReplaced,
                               bool fOverrideMempoolLimit, const CAmount& nAbsurdFee, std::vector<COutPoint>& coins_to_uncache)
 {
-    FunctionProfile profileThis("AcceptToMemoryPoolWorker", 100);
+    FunctionProfile profileThis("AcceptToMemoryPoolWorker", 100, 100);
     const CTransaction& tx = *ptx;
     const uint256 hash = tx.GetHash();
     AssertLockHeld(cs_main);
@@ -921,7 +921,7 @@ static bool AcceptToMemoryPoolWithTime(const CChainParams& chainparams, CTxMemPo
                         bool* pfMissingInputs, int64_t nAcceptTime, std::list<CTransactionRef>* plTxnReplaced,
                         bool fOverrideMempoolLimit, const CAmount nAbsurdFee)
 {
-    FunctionProfile profileThis("AcceptToMemoryPoolWithTime");
+    FunctionProfile profileThis("AcceptToMemoryPoolWithTime", - 1, 100);
     std::vector<COutPoint> coins_to_uncache;
     bool res = AcceptToMemoryPoolWorker(chainparams, pool, state, tx, fLimitFree, pfMissingInputs, nAcceptTime, plTxnReplaced, fOverrideMempoolLimit, nAbsurdFee, coins_to_uncache);
     if (!res) {
@@ -931,6 +931,11 @@ static bool AcceptToMemoryPoolWithTime(const CChainParams& chainparams, CTxMemPo
     // After we've (potentially) uncached entries, ensure our coins cache is still within its size limits
     CValidationState stateDummy;
     FlushStateToDisk(chainparams, stateDummy, FLUSH_STATE_PERIODIC);
+    if (Profiling::fAllowTxIdReceiveTimeLogging) {
+        if (res) {
+            Profiling::theProfiler().RegisterReceivedTxId(tx->GetHash().ToString());
+        }
+    }
     return res;
 }
 
@@ -2068,7 +2073,7 @@ static void DoWarning(const std::string& strWarning)
 
 /** Update chainActive and related internal data structures. */
 void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
-    FunctionProfile profileThis("UpdateTip");
+    FunctionProfile profileThis("UpdateTip", - 1, 50);
     chainActive.SetTip(pindexNew);
 
     // New best block
@@ -4400,7 +4405,7 @@ static const uint64_t MEMPOOL_DUMP_VERSION = 1;
 
 bool LoadMempool(void)
 {
-    FunctionProfile profileThis("LoadMempool");
+    FunctionProfile profileThis("LoadMempool", -1, 10);
     const CChainParams& chainparams = Params();
     int64_t nExpiryTimeout = gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60;
     FILE* filestr = fsbridge::fopen(GetDataDir() / "mempool.dat", "rb");

@@ -195,7 +195,7 @@ bool CDBIterator::Valid() { return piter->Valid(); }
 void CDBIterator::SeekToFirst() { piter->SeekToFirst(); }
 void CDBIterator::Next()
 {
-    FunctionProfile profileThis("CDBIterator::Next");
+    FunctionProfile profileThis("CDBIterator::Next", - 1, 1000);
     piter->Next();
 }
 

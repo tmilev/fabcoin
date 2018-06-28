@@ -67,7 +67,7 @@ UniValue ping(const JSONRPCRequest& request)
 }
 
 UniValue getpeerinfo(const JSONRPCRequest& request)
-{   FunctionProfile reportThis("getpeerinfo");
+{   FunctionProfile reportThis("getpeerinfo", - 1, 10);
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getpeerinfo\n"
@@ -348,7 +348,7 @@ UniValue getaddednodeinfo(const JSONRPCRequest& request)
 
 UniValue getnettotals(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getnettotals");
+    FunctionProfile profileThis("getnettotals", - 1, 10);
     if (request.fHelp || request.params.size() > 0)
         throw std::runtime_error(
             "getnettotals\n"
@@ -415,7 +415,7 @@ static UniValue GetNetworksInfo()
 
 UniValue getnetworkinfo(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getnetworkinfo");
+    FunctionProfile profileThis("getnetworkinfo", - 1, 10);
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getnetworkinfo\n"

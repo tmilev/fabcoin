@@ -333,7 +333,7 @@ bool Equihash<N,K>::BasicSolve(const eh_HashState& base_state,
                                const std::function<bool(std::vector<unsigned char>)> validBlock,
                                const std::function<bool(EhSolverCancelCheck)> cancelled)
 {
-    FunctionProfile profileThis("Equihash::BasicSolve");
+    FunctionProfile profileThis("Equihash::BasicSolve", -1, 10);
     eh_index init_size { 1 << (CollisionBitLength + 1) };
 
     // 1) Generate first list

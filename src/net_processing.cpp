@@ -378,7 +378,7 @@ void ProcessBlockAvailability(NodeId nodeid) {
 
 /** Update tracking information about which blocks a peer is assumed to have. */
 void UpdateBlockAvailability(NodeId nodeid, const uint256 &hash) {
-    FunctionProfile profileThis("UpdateBlockAvailability", 10);
+    FunctionProfile profileThis("UpdateBlockAvailability", - 1, 10);
     CNodeState *state = State(nodeid);
     assert(state != nullptr);
 
@@ -460,7 +460,7 @@ bool PeerHasHeader(CNodeState *state, const CBlockIndex *pindex)
 void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<const CBlockIndex*>& vBlocks, NodeId& nodeStaller, const Consensus::Params& consensusParams) {
     if (count == 0)
         return;
-    FunctionProfile profileThis("FindNextBlocksToDownload");
+    FunctionProfile profileThis("FindNextBlocksToDownload", -1, 100);
 
     vBlocks.reserve(vBlocks.size() + count);
     CNodeState *state = State(nodeid);
@@ -869,7 +869,7 @@ void PeerLogicValidation::NewPoWValidBlock(const CBlockIndex *pindex, const std:
 }
 
 void PeerLogicValidation::UpdatedBlockTip(const CBlockIndex *pindexNew, const CBlockIndex *pindexFork, bool fInitialDownload) {
-    FunctionProfile profileThis("PeerLogicValidation::UpdatedBlockTip", 10);
+    FunctionProfile profileThis("PeerLogicValidation::UpdatedBlockTip", 10, 20);
     const int nNewHeight = pindexNew->nHeight;
     connman->SetBestHeight(nNewHeight);
 
@@ -982,7 +982,7 @@ static void RelayTransaction(const CTransaction& tx, CConnman* connman)
 
 static void RelayAddress(const CAddress& addr, bool fReachable, CConnman* connman)
 {
-    FunctionProfile profileThis("RelayAddress", 10);
+    FunctionProfile profileThis("RelayAddress", 10, 20);
     unsigned int nRelayNodes = fReachable ? 2 : 1; // limited relaying of addresses outside our network(s)
 
     // Relay to a limited number of other nodes
@@ -1019,7 +1019,7 @@ static void RelayAddress(const CAddress& addr, bool fReachable, CConnman* connma
 
 void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
-    FunctionProfile profileThis("ProcessGetData", 10);
+    FunctionProfile profileThis("ProcessGetData", 10, 1000);
     std::deque<CInv>::iterator it = pfrom->vRecvGetData.begin();
     std::vector<CInv> vNotFound;
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
@@ -1224,7 +1224,7 @@ uint32_t GetFetchFlags(CNode* pfrom) {
 }
 
 inline void static SendBlockTransactions(const CBlock& block, const BlockTransactionsRequest& req, CNode* pfrom, CConnman* connman) {
-    FunctionProfile profileThis("SendBlockTransactions", 10);
+    FunctionProfile profileThis("SendBlockTransactions", 10, 100);
     BlockTransactions resp(req);
     for (size_t i = 0; i < req.indexes.size(); i++) {
         if (req.indexes[i] >= block.vtx.size()) {
@@ -1243,7 +1243,7 @@ inline void static SendBlockTransactions(const CBlock& block, const BlockTransac
 
 bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::vector<CBlockHeader>& headers, const CChainParams& chainparams, bool punish_duplicate_invalid)
 {
-    FunctionProfile profileThis("ProcessHeadersMessage", 10);
+    FunctionProfile profileThis("ProcessHeadersMessage", 10, 100);
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
     size_t nCount = headers.size();
 
@@ -1463,7 +1463,7 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
 
 bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, const CChainParams& chainparams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
-    FunctionProfile profileThis("ProcessMessage");
+    FunctionProfile profileThis("ProcessMessage", 10, 100);
     LogPrint(BCLog::NET, "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->GetId());
     if (gArgs.IsArgSet("-dropmessagestest") && GetRand(gArgs.GetArg("-dropmessagestest", 0)) == 0)
     {
@@ -2862,7 +2862,7 @@ static bool SendRejectsAndCheckIfBanned(CNode* pnode, CConnman* connman)
 
 bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& interruptMsgProc)
 {
-    FunctionProfile profileThis("PeerLogicValidation::ProcessMessages", 10);
+    FunctionProfile profileThis("PeerLogicValidation::ProcessMessages", 10, 100);
 
     const CChainParams& chainparams = Params();
     //
@@ -3130,7 +3130,7 @@ public:
 
 bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptMsgProc)
 {
-    FunctionProfile profileThis("PeerLogicValidation::SendMessages");
+    FunctionProfile profileThis("PeerLogicValidation::SendMessages", - 1, 100);
     const Consensus::Params& consensusParams = Params().GetConsensus();
     {
         // Don't send anything until the version handshake is complete

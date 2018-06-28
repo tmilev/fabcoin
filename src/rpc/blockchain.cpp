@@ -226,7 +226,7 @@ UniValue getblockcount(const JSONRPCRequest& request)
 
 UniValue getbestblockhash(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getbestblockhash");
+    FunctionProfile profileThis("getbestblockhash", - 1, 10);
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getbestblockhash\n"
@@ -664,7 +664,7 @@ UniValue getmempoolentry(const JSONRPCRequest& request)
 
 UniValue getblockhash(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getblockhash");
+    FunctionProfile profileThis("getblockhash", - 1, 10);
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getblockhash height\n"
@@ -756,7 +756,7 @@ UniValue getblockheader(const JSONRPCRequest& request)
 
 UniValue getblock(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getblock");
+    FunctionProfile profileThis("getblock", - 1, 10);
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
             "getblock \"blockhash\" ( verbosity legacy) \n"

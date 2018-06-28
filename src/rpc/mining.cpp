@@ -268,7 +268,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
 
 UniValue generatetoaddress(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("generatetoaddress");
+    FunctionProfile profileThis("generatetoaddress", 1, 1);
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
         throw std::runtime_error(
             "generatetoaddress nblocks address (maxtries)\n"
@@ -309,7 +309,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
 
 UniValue getmininginfo(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getmininginfo");
+    FunctionProfile profileThis("getmininginfo", - 1, 10);
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getmininginfo\n"
@@ -1132,7 +1132,7 @@ UniValue estimaterawfee(const JSONRPCRequest& request)
 
 UniValue getgenerate(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("getgenerate");
+    FunctionProfile profileThis("getgenerate", - 1, 5);
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
         "getgenerate\n"

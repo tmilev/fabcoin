@@ -420,7 +420,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
 UniValue decoderawtransaction(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("decoderawtransaction");
+    FunctionProfile profileThis("decoderawtransaction", - 1, 10);
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "decoderawtransaction \"hexstring\"\n"
@@ -890,7 +890,7 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
 
 UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHighFees)
 {
-    FunctionProfile profileThis("sendOneRawTransaction");
+    FunctionProfile profileThis("sendOneRawTransaction", - 1, 50);
     Profiling::theProfiler();
     LOCK(cs_main);
     CMutableTransaction mtx;
@@ -954,7 +954,7 @@ UniValue sendOneRawTransaction(const std::string& theTransaction, bool allowHigh
 
 UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("sendBulkRawTransactions");
+    FunctionProfile profileThis("sendBulkRawTransactions", - 1, 10);
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "sendbulkrawtransactions \"rawtransactions\" \n"
@@ -997,7 +997,7 @@ UniValue sendbulkrawtransactions(const JSONRPCRequest& request)
 
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("sendrawtransaction");
+    FunctionProfile profileThis("sendrawtransaction", - 1, 10);
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             "sendrawtransaction \"hexstring\" ( allowhighfees )\n"

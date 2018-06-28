@@ -547,7 +547,7 @@ UniValue importwallet(const JSONRPCRequest& request)
 
 UniValue dumpprivkey(const JSONRPCRequest& request)
 {
-    FunctionProfile profileThis("dumpprivkey");
+    FunctionProfile profileThis("dumpprivkey", - 1, 10);
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;

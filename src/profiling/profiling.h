@@ -46,7 +46,7 @@ public:
     );
     void accountToHistogram(unsigned int index);
     void accountStatistic(int value);
-    void initialize(const std::string& inputName);
+    void initialize(const std::string& inputName, int inputDesiredNumberOfSamplesBeforeWeSetupHistogram);
     void initializeHistogramIfPossible();
     Statistic();
 };
@@ -60,7 +60,7 @@ public:
     std::deque<int> finishTimeNumCalls;
     Statistic timeSubordinates;
     Statistic timeTotalRunTime;
-    void initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls);
+    void initialize(const std::string& inputName, int inputRecordFinishTimesEveryNCalls, int numSamplesTomComputeMean);
     void accountFinishTime(long inputDuration, long inputRunTimeSubordinates, const std::chrono::system_clock::time_point& timeEnd);
     //Not thread safe:
     UniValue toUniValue() const;
@@ -115,7 +115,7 @@ public:
      * on one machine to the 1000th call of AcceptToMemoryPoolWorker on
      * a different machine in the network.
      */
-    FunctionProfile(const std::string& name, int recordFinishTimesEveryNCalls = - 1);
+    FunctionProfile(const std::string& name, int recordFinishTimesEveryNCalls, int numSamplesToComputeMean);
     ~FunctionProfile();
 };
 
@@ -155,15 +155,19 @@ public:
     static bool fAllowFinishTimeProfiling;
     static bool fAllowTxIdReceiveTimeLogging;
     static unsigned int nMaxNumberFinishTimes;
+    static unsigned int nMaxNumberTxsToAccount;
     /** Returns a global profiling object.
      * Avoids the static initalization order fiasco.
      */
     static Profiling& theProfiler();
     std::shared_ptr<boost::mutex> centralLock;
+    std::deque<std::string> memoryPoolAcceptanceTimeKeys;
+    std::unordered_map<std::string, std::chrono::system_clock::time_point> memoryPoolAcceptanceTimes;
     //map from thread id to a stack containing the names of the profiled functions.
     std::unordered_map<std::string, std::shared_ptr<FunctionStats> > functionStats;
     std::unordered_map<unsigned long, std::shared_ptr<std::vector<FunctionProfileData> > > threadStacks;
     UniValue toUniValue();
+    void RegisterReceivedTxId(const std::string& txId);
 };
 
 #endif // PROFILING_H_header
