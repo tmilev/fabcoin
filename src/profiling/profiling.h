@@ -162,11 +162,12 @@ public:
     static Profiling& theProfiler();
     std::shared_ptr<boost::mutex> centralLock;
     std::deque<std::string> memoryPoolAcceptanceTimeKeys;
-    std::unordered_map<std::string, std::chrono::system_clock::time_point> memoryPoolAcceptanceTimes;
+    std::unordered_map<std::string, std::chrono::time_point<std::chrono::system_clock> > memoryPoolAcceptanceTimes;
     //map from thread id to a stack containing the names of the profiled functions.
     std::unordered_map<std::string, std::shared_ptr<FunctionStats> > functionStats;
     std::unordered_map<unsigned long, std::shared_ptr<std::vector<FunctionProfileData> > > threadStacks;
     UniValue toUniValue();
+    UniValue toUniValueMemoryPoolAcceptanceTimes();
     void RegisterReceivedTxId(const std::string& txId);
 };
 

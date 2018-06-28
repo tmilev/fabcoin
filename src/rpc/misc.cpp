@@ -525,6 +525,14 @@ static std::string RPCMallocInfo()
 }
 #endif
 
+UniValue gettxidreceivetimes(const JSONRPCRequest& request)
+{
+    FunctionProfile theProfile("getperformanceprofile", - 1, 10);
+    UniValue result = Profiling::theProfiler().toUniValueMemoryPoolAcceptanceTimes();
+    return result;
+}
+
+
 UniValue getperformanceprofile(const JSONRPCRequest& request)
 {
     FunctionProfile theProfile("getperformanceprofile", - 1, 10);
@@ -677,6 +685,7 @@ static const CRPCCommand commands[] =
     { "control",            "getinfo",                &getinfo,                true,  {} }, /* uses wallet if enabled */
     { "control",            "getmemoryinfo",          &getmemoryinfo,          true,  {"mode"} },
     { "control",            "getperformanceprofile",  &getperformanceprofile,  true,  {} },
+    { "control",            "gettxidreceivetimes",    &gettxidreceivetimes,    true,  {} },
     { "util",               "validateaddress",        &validateaddress,        true,  {"address"} }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true,  {"nrequired","keys"} },
     { "util",               "verifymessage",          &verifymessage,          true,  {"address","signature","message"} },

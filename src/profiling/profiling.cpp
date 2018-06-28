@@ -263,6 +263,27 @@ void Profiling::RegisterReceivedTxId(const std::string &txId)
     }
 }
 
+UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
+{
+    UniValue result(UniValue::VOBJ);
+    if (!Profiling::fAllowTxIdReceiveTimeLogging) {
+        result.pushKV ("error", "Profiling is off. Default for testnet and mainnet. "
+                                "Override by running fabcoind with -profilingon option. "
+                                "Please note that profiling is a introduces timing attacks security risks. "
+                                "DO NOT USE profiling on mainnet unless you know what you are doing. ");
+        return result;
+    }
+    boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
+    for (unsigned counter = 0; counter < this->memoryPoolAcceptanceTimeKeys.size(); counter ++) {
+        const std::string& currentTxId = this->memoryPoolAcceptanceTimeKeys[counter];
+        auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(this->memoryPoolAcceptanceTimes[currentTxId]);
+        auto timeSinceEpoch = timeMs.time_since_epoch();
+        int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
+        result.pushKV(currentTxId, receiveTime);
+    }
+    return result;
+}
+
 UniValue Profiling::toUniValue()
 {
     UniValue result(UniValue::VOBJ);
