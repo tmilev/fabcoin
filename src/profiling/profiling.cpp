@@ -274,13 +274,15 @@ UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
         return result;
     }
     boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
+    UniValue arrivalTimes(UniValue::VOBJ);
     for (unsigned counter = 0; counter < this->memoryPoolAcceptanceTimeKeys.size(); counter ++) {
         const std::string& currentTxId = this->memoryPoolAcceptanceTimeKeys[counter];
         auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(this->memoryPoolAcceptanceTimes[currentTxId]);
         auto timeSinceEpoch = timeMs.time_since_epoch();
         int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
-        result.pushKV(currentTxId, receiveTime);
+        arrivalTimes.pushKV(currentTxId, receiveTime);
     }
+    result.pushKV("arrivals", arrivalTimes);
     return result;
 }
 
