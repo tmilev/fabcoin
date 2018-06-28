@@ -95,7 +95,8 @@ void Statistic::updateHistogramRecursively(int value, unsigned int firstPossible
     assert(false);
 }
 
-UniValue Statistic::toUniValueHistogram() const {
+UniValue Statistic::toUniValueHistogram() const
+{
     UniValue result;
     result.setObject();
     UniValue content;
@@ -123,12 +124,15 @@ UniValue Statistic::toUniValueHistogram() const {
     return result;
 }
 
-UniValue Statistic::toUniValue() const {
+UniValue Statistic::toUniValue() const
+{
     UniValue result;
     result.setObject();
     result.pushKV("numSamples", (int64_t) this->numSamples);
     result.pushKV("total", (int64_t) this->total);
-    result.pushKV("meanUsedToCenterHistogram", (int64_t) this->meanUsedToComputeBuckets);
+    std::stringstream meanStream;
+    meanStream << this->meanUsedToComputeBuckets;
+    result.pushKV("meanUsedToCenterHistogram", meanStream.str());
     result.pushKV("desiredHistogramIntervalSize", (int64_t) this->desiredIntervalSize);
     if (this->fHistogramInitialized) {
         result.pushKV("histogram", this->toUniValueHistogram());
@@ -169,7 +173,7 @@ void Statistic::initializeHistogramIfPossible()
 void Statistic::initialize(const std::string& inputName)
 {
     this->name = inputName;
-    this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram = 100;
+    this->desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram = 200;
     this->fHistogramInitialized = false;
     this->desiredNumberOfHistogramBucketsMinusOne = 100;
     this->numSamples = 0;
