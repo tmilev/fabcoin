@@ -263,6 +263,14 @@ void Profiling::RegisterReceivedTxId(const std::string &txId)
     }
 }
 
+int64_t convertTimePointToIntMilliseconds(std::chrono::time_point<std::chrono::system_clock>& input)
+{
+    auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(input);
+    auto timeSinceEpoch = timeMs.time_since_epoch();
+    int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
+    return receiveTime;
+}
+
 UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
 {
     UniValue result(UniValue::VOBJ);
@@ -277,9 +285,7 @@ UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
     UniValue arrivalTimes(UniValue::VOBJ);
     for (unsigned counter = 0; counter < this->memoryPoolAcceptanceTimeKeys.size(); counter ++) {
         const std::string& currentTxId = this->memoryPoolAcceptanceTimeKeys[counter];
-        auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(this->memoryPoolAcceptanceTimes[currentTxId]);
-        auto timeSinceEpoch = timeMs.time_since_epoch();
-        int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
+        int64_t receiveTime = convertTimePointToIntMilliseconds(this->memoryPoolAcceptanceTimes[currentTxId]);
         arrivalTimes.pushKV(currentTxId, receiveTime);
     }
     result.pushKV("arrivals", arrivalTimes);
@@ -301,6 +307,7 @@ UniValue Profiling::toUniValue()
     for (auto iterator = this->functionStats.begin(); iterator != this->functionStats.end(); iterator ++) {
         functionStats.pushKV(iterator->first, iterator->second->toUniValue());
     }
+    result.pushKV("startTime", convertTimePointToIntMilliseconds(this->timeStart));
     result.pushKV("functionStats", functionStats);
     UniValue theThreads;
     theThreads.setArray();
@@ -325,6 +332,7 @@ Profiling::Profiling()
         << LoggerSession::colorGreen << " To turn on (overriding defaults) use option -profilingon";
     }
     LoggerSession::logProfiling() << LoggerSession::endL;
+    this->timeStart = std::chrono::system_clock::now();
     LoggerSession::logProfiling() << LoggerSession::colorYellow
     << "DO NOT use profiling on mainnet unless you know what are doing. " << LoggerSession::endL;
 }
