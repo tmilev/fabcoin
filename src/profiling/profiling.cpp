@@ -217,7 +217,15 @@ bool Statistic::fromUniValueForStorageHistogram(const UniValue& inpuT)
             return false;
         }
     }
-    this->numCallsUpdateHistogramRecursively = histogramContent[KeyNames::numberOfRecursiveHistogramUpdateCalls].get_int64();
+    //LoggerSession::logProfiling()
+    //<< "DEBUG: got to before recursive data load, will load from: "
+    //<< inpuT[KeyNames::numberOfRecursiveHistogramUpdateCalls].write()
+    //<< "\n with type: " << inpuT[KeyNames::numberOfRecursiveHistogramUpdateCalls].type()
+    //<< " and content: " << inpuT[KeyNames::numberOfRecursiveHistogramUpdateCalls].get_str()
+    //<< "\nInput is: "<< inpuT.write() << LoggerSession::endL;
+
+    this->numCallsUpdateHistogramRecursively = inpuT[KeyNames::numberOfRecursiveHistogramUpdateCalls].get_int64();
+    //LoggerSession::logProfiling() << "DEBUG: got to after recursive data load. " << LoggerSession::endL;
     return true;
 }
 
@@ -246,7 +254,9 @@ bool Statistic::fromUniValueForStorage(const UniValue& input)
     //LoggerSession::logProfiling()
     //<< "DEBUG: loaded: " << this->numberOfSamples << " samples from: "
     //<< input[KeyNames::numberOfSamples].write() << LoggerSession::endL;
+    //LoggerSession::logProfiling() << "DEBUG: got to before totals. " << LoggerSession::endL;
     this->total = input[KeyNames::totalRunTime].get_int64();
+    //LoggerSession::logProfiling() << "DEBUG: got after totals. " << LoggerSession::endL;
     //LoggerSession::logProfiling()
     //<< "DEBUG: loaded: " << this->total << " total from: "
     //<< input[KeyNames::totalRunTime].write() << LoggerSession::endL;
@@ -551,6 +561,7 @@ bool Profiling::fromUniValueForStorageNoLock(const UniValue& input)
     }
     const UniValue& theStats = input[KeyNames::functionStats];
     bool result = true;
+    //LoggerSession::logProfiling() << "DEBUG: got to before crunching stats. " << LoggerSession::endL;
     for (unsigned i = 0; i < theStats.size(); i ++) {
         const std::string& currentName = theStats.getKeys()[i];
         const UniValue& currentStatJSON = theStats.getValues()[i];
@@ -628,6 +639,9 @@ Profiling::Profiling()
     << LoggerSession::colorNormal << LoggerSession::endL;
     std::string statisticsRead((std::istreambuf_iterator<char>(statsFile)), std::istreambuf_iterator<char>());
     this->ReadStatistics(statisticsRead);
+    LoggerSession::logProfiling()
+    << LoggerSession::colorGreen
+    << "Profiling stats read (total " << this->numberOfStatisticsLoaded << " samples)" << LoggerSession::endL;
 }
 
 bool Profiling::ReadStatistics(const std::string& input)
@@ -639,6 +653,7 @@ bool Profiling::ReadStatistics(const std::string& input)
         << input << LoggerSession::endL;
         return false;
     }
+    //LoggerSession::logProfiling() << "DEBUG: got to here. " << LoggerSession::endL;
     return this->fromUniValueForStorageNoLock(readFromHD);
 }
 
