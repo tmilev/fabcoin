@@ -547,7 +547,7 @@ UniValue getperformanceprofile(const JSONRPCRequest& request)
             "\nResult:\n"
             "To be documented."
         );
-    UniValue result = Profiling::theProfiler().toUniValue();
+    UniValue result = Profiling::theProfiler().toUniValueForBrowser();
     return result;
 }
 

@@ -16,7 +16,7 @@ public:
     //We are making statistics for non-negative integers.
     //Original use case: statistics in microseconds.
     std::string name;
-    int numSamples;
+    int numberOfSamples;
     long total;
     bool fHistogramInitialized;
     unsigned int desiredNumberOfSampleMeasurementsBeforeWeSetupTheHistogram;
@@ -29,10 +29,14 @@ public:
     //<- If the elements of histogramIntervals are x_0, x_2, ... , x_{N-1},
     // then the buckets of the histogram are:
     // (-\infty, x_0], (x_0, x_1], (x_1, x_2], ..., (x_{N-2}, x_{N-1}], (x_{N-1}, \infty)
-    std::unordered_map<int, int> histogram;
+    std::unordered_map<int, long> histogram;
     double standardDeviationNoBesselCorrection();
     UniValue toUniValue() const;
     UniValue toUniValueHistogram() const;
+    UniValue toUniValueHistogramForStorage() const;
+    UniValue toUniValueForStorage() const;
+    bool fromUniValueForStorage(const UniValue& input);
+    bool fromUniValueForStorageHistogram(const UniValue& inpuT);
     double computeMean();
     bool isInHistogramBucketRange(int value, unsigned int firstPossibleBucketIndex, unsigned int lastPossibleBucketIndex);
     bool isInHistogramBucketRangeLeft(int value, unsigned int firstPossibleBucketIndex);
@@ -48,6 +52,7 @@ public:
     void accountStatistic(int value);
     void initialize(const std::string& inputName, int inputDesiredNumberOfSamplesBeforeWeSetupHistogram);
     void initializeHistogramIfPossible();
+    void initializeHistogramFromMean(double inputMean);
     Statistic();
 };
 
@@ -64,6 +69,8 @@ public:
     void accountFinishTime(long inputDuration, long inputRunTimeSubordinates, const std::chrono::system_clock::time_point& timeEnd);
     //Not thread safe:
     UniValue toUniValue() const;
+    UniValue toUniValueForStorage() const;
+    bool fromUniValueForStorageNoLock(const std::string &inputName, const UniValue& input);
 };
 
 class FunctionProfileData
@@ -161,13 +168,27 @@ public:
      */
     static Profiling& theProfiler();
     std::shared_ptr<boost::mutex> centralLock;
+    UniValue statisticsPersistent;
     std::deque<std::string> memoryPoolAcceptanceTimeKeys;
+    std::string fileNameStatistics;
+    std::vector<int64_t> timeStartsInThePast;
+    std::vector<int64_t> timeSamplingsInPast;
     std::chrono::time_point<std::chrono::system_clock> timeStart;
     std::unordered_map<std::string, std::chrono::time_point<std::chrono::system_clock> > memoryPoolAcceptanceTimes;
+    long numberOfStatisticsTakenCurrentSession;
+    int numberStatisticsSinceLastStorage;
+    int numberOfStatisticsLoaded;
+    int nWriteStatisticsToHDEveryThisNumberOfCalls;
+
     //map from thread id to a stack containing the names of the profiled functions.
     std::unordered_map<std::string, std::shared_ptr<FunctionStats> > functionStats;
     std::unordered_map<unsigned long, std::shared_ptr<std::vector<FunctionProfileData> > > threadStacks;
-    UniValue toUniValue();
+    bool ReadStatistics(const std::string& input);
+    bool WriteStatistics();
+    void AccountStat();
+    UniValue toUniValueForBrowser();
+    bool fromUniValueForStorageNoLock(const UniValue& input);
+    UniValue toUniValueForStorageNoLock();
     UniValue toUniValueMemoryPoolAcceptanceTimes();
     void RegisterReceivedTxId(const std::string& txId);
 };
