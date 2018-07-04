@@ -9,7 +9,7 @@
 bool Profiling::fAllowProfiling = false;
 bool Profiling::fAllowFinishTimeProfiling = false;
 unsigned int Profiling::nMaxNumberFinishTimes = 1000;
-unsigned int Profiling::nMaxNumberTxsToAccount = 20000;
+unsigned int Profiling::nMaxNumberTxsToAccount = 50000;
 bool Profiling::fAllowTxIdReceiveTimeLogging = false;
 
 struct KeyNames
@@ -27,6 +27,8 @@ struct KeyNames
     static std::string histogramContent;
     static std::string numberOfRecursiveHistogramUpdateCalls;
     static std::string numberOfSamplesLoadedFromHD;
+    static std::string arrivals;
+    static std::string totalTxIdsReceived;
 };
 
 std::string KeyNames::functionStats = "functionStats";
@@ -41,7 +43,10 @@ std::string KeyNames::runTime = "runTime";
 std::string KeyNames::runTimeSubordinates = "runTimeSubordinates";
 std::string KeyNames::histogramContent = "histogramContent";
 std::string KeyNames::numberOfRecursiveHistogramUpdateCalls = "numberOfRecursiveHistogramUpdateCalls";
+std::string KeyNames::arrivals = "arrivals";
+std::string KeyNames::totalTxIdsReceived = "totalTxIdsReceived";
 std::string KeyNames::numberOfSamplesLoadedFromHD = "numberOfStatisticsLoadedFromHD";
+
 
 Statistic::Statistic()
 {
@@ -449,6 +454,14 @@ UniValue FunctionStats::toUniValue() const
     return result;
 }
 
+int64_t convertTimePointToIntMilliseconds(const std::chrono::time_point<std::chrono::system_clock>& input)
+{
+    auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(input);
+    auto timeSinceEpoch = timeMs.time_since_epoch();
+    int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
+    return receiveTime;
+}
+
 void Profiling::RegisterReceivedTxId(const std::string &txId)
 {
     if (!this->fAllowTxIdReceiveTimeLogging)
@@ -458,7 +471,8 @@ void Profiling::RegisterReceivedTxId(const std::string &txId)
         return;
     }
     this->memoryPoolAcceptanceTimeKeys.push_back(txId);
-    this->memoryPoolAcceptanceTimes[txId] = std::chrono::system_clock::now();
+    long timeInMsSinceEpoch = convertTimePointToIntMilliseconds(std::chrono::system_clock::now());
+    this->memoryPoolAcceptanceTimes[txId] = timeInMsSinceEpoch;
     while (this->memoryPoolAcceptanceTimeKeys.size() > this->nMaxNumberTxsToAccount) {
         //<- this loop should run only once.
         this->memoryPoolAcceptanceTimes.erase(this->memoryPoolAcceptanceTimeKeys.front());
@@ -466,18 +480,10 @@ void Profiling::RegisterReceivedTxId(const std::string &txId)
     }
 }
 
-int64_t convertTimePointToIntMilliseconds(const std::chrono::time_point<std::chrono::system_clock>& input)
-{
-    auto timeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(input);
-    auto timeSinceEpoch = timeMs.time_since_epoch();
-    int64_t receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch).count();
-    return receiveTime;
-}
-
 UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
 {
-    UniValue result(UniValue::VOBJ);
     if (!Profiling::fAllowTxIdReceiveTimeLogging) {
+        UniValue result(UniValue::VOBJ);
         result.pushKV ("error", "Profiling is off. Default for testnet and mainnet. "
                                 "Override by running fabcoind with -profilingon option. "
                                 "Please note that profiling is a introduces timing attacks security risks. "
@@ -485,13 +491,20 @@ UniValue Profiling::toUniValueMemoryPoolAcceptanceTimes()
         return result;
     }
     boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
+    return this->toUniValueMemoryPoolAcceptanceTimesNoLocks();
+}
+
+UniValue Profiling::toUniValueMemoryPoolAcceptanceTimesNoLocks()
+{
+    UniValue result(UniValue::VOBJ);
     UniValue arrivalTimes(UniValue::VOBJ);
     for (unsigned counter = 0; counter < this->memoryPoolAcceptanceTimeKeys.size(); counter ++) {
         const std::string& currentTxId = this->memoryPoolAcceptanceTimeKeys[counter];
-        int64_t receiveTime = convertTimePointToIntMilliseconds(this->memoryPoolAcceptanceTimes[currentTxId]);
+        int64_t receiveTime = this->memoryPoolAcceptanceTimes[currentTxId];
         arrivalTimes.pushKV(currentTxId, receiveTime);
     }
-    result.pushKV("arrivals", arrivalTimes);
+    result.pushKV(KeyNames::arrivals, arrivalTimes);
+    result.pushKV(KeyNames::totalTxIdsReceived, this->numberMemoryPoolReceives);
     return result;
 }
 
@@ -535,13 +548,21 @@ void Profiling::AccountStat()
     this->numberOfStatisticsTakenCurrentSession = 0;
     if (!this->fAllowProfiling)
         return;
-    UniValue theValue = this->toUniValueForStorageNoLock();
+    UniValue statJSON = this->toUniValueForStorageNoLock();
     //LoggerSession::logProfiling() << "DEBUG: About to write: " << theValue.write();
     LoggerSession::logProfiling()
     << "Storing current profing stats to file: "
     << LoggerSession::colorBlue << this->fileNameStatistics << LoggerSession::endL;
-    std::ofstream fileOut(this->fileNameStatistics);
-    fileOut << theValue.write();
+    std::ofstream fileOutProfiling(this->fileNameStatistics);
+    fileOutProfiling << statJSON.write();
+
+    UniValue txIdJSON = this->toUniValueMemoryPoolAcceptanceTimesNoLocks();
+    //LoggerSession::logProfiling() << "DEBUG: About to write: " << theValue.write();
+    LoggerSession::logProfiling()
+    << "Storing current txid receive time stats to file: "
+    << LoggerSession::colorBlue << this->fileNameTxIdReceiveTimes << LoggerSession::endL;
+    std::ofstream fileOutTxIdReceives(this->fileNameTxIdReceiveTimes);
+    fileOutTxIdReceives << txIdJSON.write();
 }
 
 bool Profiling::fromUniValueForStorageNoLock(const UniValue& input)
@@ -623,6 +644,7 @@ Profiling::Profiling()
     this->numberStatisticsSinceLastStorage = 0;
     this->numberOfStatisticsLoaded = 0;
     this->nWriteStatisticsToHDEveryThisNumberOfCalls = 1000;
+    this->numberMemoryPoolReceives = 0;
     this->centralLock = std::make_shared<boost::mutex>();
     if (this->fAllowProfiling) {
         LoggerSession::logProfiling() << LoggerSession::colorGreen
@@ -638,15 +660,59 @@ Profiling::Profiling()
     LoggerSession::logProfiling() << LoggerSession::colorYellow
     << "DO NOT use profiling on mainnet unless you know what are doing. " << LoggerSession::endL;
     this->fileNameStatistics = LoggerSession::baseFolderComputedRunTime + "/profiling_statistics.json";
+    this->fileNameTxIdReceiveTimes = LoggerSession::baseFolderComputedRunTime + "/txid_receive_times.json";
     std::ifstream statsFile(this->fileNameStatistics);
     LoggerSession::logProfiling()
-    << LoggerSession::colorBlue << "Reading profiling stats from previous runs from file: " << this->fileNameStatistics
+    << "Reading profiling stats from previous runs from file: " << LoggerSession::colorBlue << this->fileNameStatistics
     << LoggerSession::colorNormal << LoggerSession::endL;
     std::string statisticsRead((std::istreambuf_iterator<char>(statsFile)), std::istreambuf_iterator<char>());
     this->ReadStatistics(statisticsRead);
+
+    std::ifstream txidFile(this->fileNameTxIdReceiveTimes);
+    LoggerSession::logProfiling()
+    << "Reading txid receive times from previous runs from file: " << LoggerSession::colorBlue << this->fileNameTxIdReceiveTimes
+    << LoggerSession::colorNormal << LoggerSession::endL;
+    std::string txIdTimesRead((std::istreambuf_iterator<char>(txidFile)), std::istreambuf_iterator<char>());
+
+    this->ReadTxidReceiveTimes(txIdTimesRead);
     LoggerSession::logProfiling()
     << LoggerSession::colorGreen
-    << "Profiling stats read (total " << this->numberOfStatisticsLoaded << " samples)" << LoggerSession::endL;
+    << "Profiling stats read: total " << this->numberOfStatisticsLoaded << " samples previously accounted. " << LoggerSession::endL;
+}
+
+bool Profiling::fromUniValueTxIdReceiveTimesNoLocks(const UniValue& input)
+{
+    if (!checkForKeys({KeyNames::arrivals, KeyNames::totalTxIdsReceived}, input)) {
+        return false;
+    }
+    const UniValue& arrivals = input[KeyNames::arrivals];
+    try {
+        for (unsigned i = 0; i < arrivals.size(); i ++) {
+            const std::string& currentTxId = arrivals.getKeys()[i];
+            this->memoryPoolAcceptanceTimeKeys.push_back(currentTxId);
+            this->memoryPoolAcceptanceTimes[currentTxId] = arrivals.getValues()[i].get_int64();
+        }
+        this->numberMemoryPoolReceives = arrivals[KeyNames::totalTxIdsReceived].get_int64();
+    } catch (...) {
+        LoggerSession::logProfiling()
+        << LoggerSession::colorRed << "Failed to load tx id received times statistics. " << LoggerSession::endL;
+        return false;
+    }
+    return true;
+
+}
+
+bool Profiling::ReadTxidReceiveTimes(const std::string& input)
+{
+    UniValue readFromHD;
+    if (!readFromHD.read(input)){
+        LoggerSession::logProfiling()
+        << LoggerSession::colorRed << "Txid receive times JSON read failed. " << LoggerSession::colorNormal
+        << input << LoggerSession::endL;
+        return false;
+    }
+    //LoggerSession::logProfiling() << "DEBUG: got to here. " << LoggerSession::endL;
+    return this->fromUniValueTxIdReceiveTimesNoLocks(readFromHD);
 }
 
 bool Profiling::ReadStatistics(const std::string& input)

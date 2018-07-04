@@ -171,26 +171,29 @@ public:
     UniValue statisticsPersistent;
     std::deque<std::string> memoryPoolAcceptanceTimeKeys;
     std::string fileNameStatistics;
+    std::string fileNameTxIdReceiveTimes;
     std::vector<int64_t> timeStartsInThePast;
     std::vector<int64_t> timeSamplingsInPast;
     std::chrono::time_point<std::chrono::system_clock> timeStart;
-    std::unordered_map<std::string, std::chrono::time_point<std::chrono::system_clock> > memoryPoolAcceptanceTimes;
+    std::unordered_map<std::string, long > memoryPoolAcceptanceTimes;
     long numberOfStatisticsTakenCurrentSession;
     int numberStatisticsSinceLastStorage;
     int numberOfStatisticsLoaded;
     int nWriteStatisticsToHDEveryThisNumberOfCalls;
-
+    long numberMemoryPoolReceives;
     //map from thread id to a stack containing the names of the profiled functions.
     std::unordered_map<std::string, std::shared_ptr<FunctionStats> > functionStats;
     std::unordered_map<unsigned long, std::shared_ptr<std::vector<FunctionProfileData> > > threadStacks;
     bool ReadStatistics(const std::string& input);
-    bool WriteStatistics();
+    bool ReadTxidReceiveTimes(const std::string& input);
     void AccountStat();
     UniValue toUniValueForBrowser();
     bool fromUniValueForStorageNoLock(const UniValue& input);
+    bool fromUniValueTxIdReceiveTimesNoLocks(const UniValue& input);
     void recordTimeStats(UniValue& output);
     UniValue toUniValueForStorageNoLock();
     UniValue toUniValueMemoryPoolAcceptanceTimes();
+    UniValue toUniValueMemoryPoolAcceptanceTimesNoLocks();
     void RegisterReceivedTxId(const std::string& txId);
 };
 
