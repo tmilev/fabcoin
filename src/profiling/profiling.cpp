@@ -473,6 +473,7 @@ void Profiling::RegisterReceivedTxId(const std::string &txId)
     this->memoryPoolAcceptanceTimeKeys.push_back(txId);
     long timeInMsSinceEpoch = convertTimePointToIntMilliseconds(std::chrono::system_clock::now());
     this->memoryPoolAcceptanceTimes[txId] = timeInMsSinceEpoch;
+    this->numberMemoryPoolReceives ++;
     while (this->memoryPoolAcceptanceTimeKeys.size() > this->nMaxNumberTxsToAccount) {
         //<- this loop should run only once.
         this->memoryPoolAcceptanceTimes.erase(this->memoryPoolAcceptanceTimeKeys.front());
@@ -643,7 +644,7 @@ Profiling::Profiling()
     this->numberOfStatisticsTakenCurrentSession = 0;
     this->numberStatisticsSinceLastStorage = 0;
     this->numberOfStatisticsLoaded = 0;
-    this->nWriteStatisticsToHDEveryThisNumberOfCalls = 1000;
+    this->nWriteStatisticsToHDEveryThisNumberOfCalls = 5000;
     this->numberMemoryPoolReceives = 0;
     this->centralLock = std::make_shared<boost::mutex>();
     if (this->fAllowProfiling) {
@@ -677,7 +678,10 @@ Profiling::Profiling()
     this->ReadTxidReceiveTimes(txIdTimesRead);
     LoggerSession::logProfiling()
     << LoggerSession::colorGreen
-    << "Profiling stats read: total " << this->numberOfStatisticsLoaded << " samples previously accounted. " << LoggerSession::endL;
+    << "Profiling stats read: total " << this->numberOfStatisticsLoaded << " samples previously accounted. " << LoggerSession::endL
+    << LoggerSession::colorGreen
+    << "Total txids loaded: " << this->memoryPoolAcceptanceTimeKeys.size() << "; total ever accounted: " << this->numberMemoryPoolReceives
+    << LoggerSession::endL;
 }
 
 bool Profiling::fromUniValueTxIdReceiveTimesNoLocks(const UniValue& input)
@@ -692,7 +696,7 @@ bool Profiling::fromUniValueTxIdReceiveTimesNoLocks(const UniValue& input)
             this->memoryPoolAcceptanceTimeKeys.push_back(currentTxId);
             this->memoryPoolAcceptanceTimes[currentTxId] = arrivals.getValues()[i].get_int64();
         }
-        this->numberMemoryPoolReceives = arrivals[KeyNames::totalTxIdsReceived].get_int64();
+        this->numberMemoryPoolReceives = input[KeyNames::totalTxIdsReceived].get_int64();
     } catch (...) {
         LoggerSession::logProfiling()
         << LoggerSession::colorRed << "Failed to load tx id received times statistics. " << LoggerSession::endL;
@@ -705,7 +709,7 @@ bool Profiling::fromUniValueTxIdReceiveTimesNoLocks(const UniValue& input)
 bool Profiling::ReadTxidReceiveTimes(const std::string& input)
 {
     UniValue readFromHD;
-    if (!readFromHD.read(input)){
+    if (!readFromHD.read(input)) {
         LoggerSession::logProfiling()
         << LoggerSession::colorRed << "Txid receive times JSON read failed. " << LoggerSession::colorNormal
         << input << LoggerSession::endL;
