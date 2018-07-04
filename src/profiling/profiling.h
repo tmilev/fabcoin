@@ -188,6 +188,7 @@ public:
     void AccountStat();
     UniValue toUniValueForBrowser();
     bool fromUniValueForStorageNoLock(const UniValue& input);
+    void recordTimeStats(UniValue& output);
     UniValue toUniValueForStorageNoLock();
     UniValue toUniValueMemoryPoolAcceptanceTimes();
     void RegisterReceivedTxId(const std::string& txId);

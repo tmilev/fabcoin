@@ -510,7 +510,7 @@ UniValue Profiling::toUniValueForBrowser()
     for (auto iterator = this->functionStats.begin(); iterator != this->functionStats.end(); iterator ++) {
         functionStats.pushKV(iterator->first, iterator->second->toUniValue());
     }
-    result.pushKV("startTime", convertTimePointToIntMilliseconds(this->timeStart));
+    this->recordTimeStats(result);
     result.pushKV(KeyNames::numberOfSamplesLoadedFromHD, this->numberOfStatisticsLoaded);
     result.pushKV(KeyNames::functionStats, functionStats);
     UniValue theThreads;
@@ -582,6 +582,21 @@ bool Profiling::fromUniValueForStorageNoLock(const UniValue& input)
     return result;
 }
 
+void Profiling::recordTimeStats(UniValue& output)
+{
+    UniValue timesStart, timesRecordingInPast;
+    timesStart.setArray();
+    timesRecordingInPast.setArray();
+    for (unsigned i = 0; i < this->timeStartsInThePast.size(); i ++) {
+        timesStart.push_back(this->timeStartsInThePast[i]);
+        timesRecordingInPast.push_back(this->timeSamplingsInPast[i]);
+    }
+    timesStart.push_back(convertTimePointToIntMilliseconds(this->timeStart));
+    timesRecordingInPast.push_back(convertTimePointToIntMilliseconds(std::chrono::system_clock::now()));
+    output.pushKV(KeyNames::timesPastStarts, timesStart);
+    output.pushKV(KeyNames::timesPastSamplings, timesRecordingInPast);
+}
+
 UniValue Profiling::toUniValueForStorageNoLock()
 {   //DO not lock please, this function is called from already locking functions.
     //boost::lock_guard<boost::mutex> lockGuard (*this->centralLock);
@@ -597,17 +612,7 @@ UniValue Profiling::toUniValueForStorageNoLock()
     for (auto iterator = this->functionStats.begin(); iterator != this->functionStats.end(); iterator ++) {
         functionStats.pushKV(iterator->first, iterator->second->toUniValueForStorage());
     }
-    UniValue timesStart, timesRecordingInPast;
-    timesStart.setArray();
-    timesRecordingInPast.setArray();
-    for (unsigned i = 0; i < this->timeStartsInThePast.size(); i ++) {
-        timesStart.push_back(this->timeStartsInThePast[i]);
-        timesRecordingInPast.push_back(this->timeSamplingsInPast[i]);
-    }
-    timesStart.push_back(convertTimePointToIntMilliseconds(this->timeStart));
-    timesRecordingInPast.push_back(convertTimePointToIntMilliseconds(std::chrono::system_clock::now()));
-    result.pushKV(KeyNames::timesPastStarts, timesStart);
-    result.pushKV(KeyNames::timesPastSamplings, timesRecordingInPast);
+    this->recordTimeStats(result);
     result.pushKV(KeyNames::functionStats, functionStats);
     return result;
 }
