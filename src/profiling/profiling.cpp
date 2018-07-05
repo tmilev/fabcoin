@@ -579,7 +579,7 @@ bool Profiling::fromUniValueForStorageNoLock(const UniValue& input)
     const UniValue& pastSamplings = input[KeyNames::timesPastSamplings];
     this->timeSamplingsInPast.resize(pastSamplings.size());
     for (unsigned i = 0; i < this->timeSamplingsInPast.size(); i ++) {
-        this->timeSamplingsInPast[i] = pastStarts[i].get_int64();
+        this->timeSamplingsInPast[i] = pastSamplings[i].get_int64();
     }
     const UniValue& theStats = input[KeyNames::functionStats];
     bool result = true;
