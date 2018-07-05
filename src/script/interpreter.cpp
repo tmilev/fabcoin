@@ -12,6 +12,7 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include "profiling/profiling.h"
 #include <sstream>
 
 typedef std::vector<unsigned char> valtype;
@@ -1530,6 +1531,7 @@ static bool VerifyWitnessProgram(const CScriptWitness& witness, int witversion, 
 
 bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, const CScriptWitness* witness, unsigned int flags, const BaseSignatureChecker& checker, ScriptError* serror, std::stringstream* extraErrorStream)
 {
+    FunctionProfile profileThis("VerifyScript", -1, 100);
     static const CScriptWitness emptyWitness;
     if (witness == nullptr) {
         witness = &emptyWitness;

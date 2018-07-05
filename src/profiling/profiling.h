@@ -117,7 +117,7 @@ public:
      * Only the latest Profiling::nMaxNumberFinishTimes finish times are recorded,
      * all earlier finish times will be discarded.
      *
-     * Original use case: we are using this to time actions accross a network: say, compare the
+     * Original use case: we are using this to time actions across a network: say, compare the
      * completion times of the 1000th call of AcceptToMemoryPoolWorker
      * on one machine to the 1000th call of AcceptToMemoryPoolWorker on
      * a different machine in the network.
